@@ -1,6 +1,8 @@
 import sys
+import asyncio
+import struct
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QLineEdit
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer, Slot, QThread
 from main_window import Ui_MainWindow
 from controls_window import Ui_controlsDialog
 from settings_window import Ui_settingsDialog
@@ -25,6 +27,24 @@ class CustomLineEdit(QLineEdit):
     def mouseDoubleClickEvent(self, event):
         event.ignore()
 
+class AsyncioThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self.loop = asyncio.new_event_loop()
+        self.protocol = None
+        self.transport = None
+
+    async def start_udp_server(self):
+        print("Starting UDP server...")
+        self.transport, self.protocol = await self.loop.create_datagram_endpoint(
+            lambda: UDPServer(), local_addr=('127.0.0.1', 9999)
+        )
+
+    def run(self):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.start_udp_server())
+        self.loop.run_forever()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -38,6 +58,15 @@ class MainWindow(QMainWindow):
         #self.replace_widget_with_custom(self.ui.centralwidget.layout(), QLineEdit, CustomLineEdit)
                 # инициализируем интерфейс в главном окне
         self.setup_connections()        # создаём обработчики событий
+
+                # Таймер для отправки данных
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.send_data)
+        self.timer.start(2000)  # Отправляем данные каждые 2 секунды
+
+        # Запускаем асинхронный UDP сервер в отдельном потоке
+        self.udp_thread = AsyncioThread()
+        self.udp_thread.start()
 
     def setup_connections(self):
         # Пример подключения событий к интерфейсу
@@ -64,6 +93,20 @@ class MainWindow(QMainWindow):
 
     def on_right_click(self):
         print("Правая кнопка мыши нажата на кнопке")
+
+    async def start_udp_server(self):
+        print("Starting UDP server...")
+        self.transport, self.protocol = await self.loop.create_datagram_endpoint(
+            lambda: UDPServer(), local_addr=('127.0.0.1', 9999)
+        )
+
+    def send_data(self):
+        # Отправляем данные из lineEdit1 на сервер
+        text = self.controlsDialog.getLineEditText("Forward")
+        print(text)
+        if text:
+            self.transport.sendto(text.encode(), ('127.0.0.1', 9999))
+            print(f"Sent: {text}")
 
 class SettingsDialog(QDialog):
     def __init__(self):
@@ -152,7 +195,7 @@ class ControlsDialog(QDialog):
         if line_edit:
             line_edit.setText(text)
 
-    def print_specific_line_edit_text(self, name):
+    def getLineEditText(self, name):
         line_edit = self.get_line_edit(name)
         if line_edit:
             return line_edit.text()
@@ -194,6 +237,26 @@ class ControlsDialog(QDialog):
             # Если элемент - это вложенный layout, проверяем его рекурсивно
             elif item.layout():
                 self.replace_widget_with_custom(item.layout(), base_class, action_map)
+
+class UDPServer(asyncio.DatagramProtocol):
+    def __init__(self):
+        print("sercer init")  # Ссылка на объект line edit
+
+    def connection_made(self, transport):
+        self.transport = transport
+        print("UDP Server started")
+
+    def datagram_received(self, data, addr):
+        print(f"Received {data} from {addr}")
+        # Обновляем текст в lineEdit
+        self.line_edit.setText(data.decode())
+
+    def error_received(self, exc):
+        print(f"Error received: {exc}")
+
+    def connection_lost(self, exc):
+        print("UDP Server stopped")
+        self.transport.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
