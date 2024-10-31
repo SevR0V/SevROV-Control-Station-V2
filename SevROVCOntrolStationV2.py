@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
 
     def send_data(self):
         # Отправляем данные из lineEdit1 на сервер
-        text = self.controlsDialog.getLineEditText("Forward")
+        text = self.controlsDialog.getLineEditText("primaryForward")
         print(text)
         if text:
             self.transport.sendto(text.encode(), ('127.0.0.1', 9999))
@@ -249,7 +249,6 @@ class UDPServer(asyncio.DatagramProtocol):
     def datagram_received(self, data, addr):
         print(f"Received {data} from {addr}")
         # Обновляем текст в lineEdit
-        self.line_edit.setText(data.decode())
 
     def error_received(self, exc):
         print(f"Error received: {exc}")
