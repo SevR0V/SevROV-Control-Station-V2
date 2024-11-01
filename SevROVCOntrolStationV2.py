@@ -6,6 +6,22 @@ from PySide6.QtCore import Qt, Signal, QTimer, Slot, QThread
 from main_window import Ui_MainWindow
 from controls_window import Ui_controlsDialog
 from settings_window import Ui_settingsDialog
+import numpy as np
+
+# controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
+# flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
+
+#ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP
+
+UDP_FLAGS_MASTERx = np.uint64(1 << 0)
+UDP_FLAGS_LIGHT_STATEx = np.uint64(1 << 1)
+UDP_FLAGS_STAB_ROLLx = np.uint64(1 << 2)
+UDP_FLAGS_STAB_PITCHx = np.uint64(1 << 3)
+UDP_FLAGS_STAB_YAWx = np.uint64(1 << 4)
+UDP_FLAGS_STAB_DEPTHx = np.uint64(1 << 5)
+UDP_FLAGS_RESET_POSITIONx = np.uint64(1 << 6)
+UDP_FLAGS_RESET_IMUx = np.uint64(1 << 7)
+UDP_FLAGS_UPDATE_PIDx = np.uint64(1 << 8)
 
 class CustomLineEdit(QLineEdit):
     leftClicked = Signal()
@@ -28,18 +44,20 @@ class CustomLineEdit(QLineEdit):
         event.ignore()
 
 class AsyncioThread(QThread):
-    def __init__(self):
+    def __init__(self, IP, port):
         super().__init__()
         self.loop = asyncio.new_event_loop()
+        self.IP = IP
+        self.port = port
         self.protocol = None
         self.transport = None
+        self.udpServer = UDPServer()
 
     async def start_udp_server(self):
-        print("Starting UDP server...")
         self.transport, self.protocol = await self.loop.create_datagram_endpoint(
-            lambda: UDPServer(), local_addr=('127.0.0.1', 9999)
+            lambda: self.udpServer, local_addr=('0.0.0.0', 8888)
         )
-
+    
     def run(self):
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(self.start_udp_server())
@@ -54,24 +72,80 @@ class MainWindow(QMainWindow):
         self.settingsDialogUi = Ui_settingsDialog()
         self.controlsDialogUi = Ui_controlsDialog()
         self.controlsDialog = ControlsDialog(self.num)
-
+        
+        
+        self.stabEnable = False
+        self.remoteIP = '192.169.0.12'
+        self.remotePort = 1337
+        self.connected = False
+        #данные для аппарата
+        self.cControlFlags = np.uint64(0)
+        self.cForwardThrust = 0.0
+        self.cStrafeThrust = 0.0
+        self.cVerticalThrust = 0.0
+        self.cYawThrust = 0.0
+        self.cRollInc = 0.0
+        self.cPitchInc = 0.0
+        self.cPowerTarget = 0.0
+        self.cCamRotate = 0.0
+        self.cManGrip = 0.0
+        self.cManRotate = 0.0
+        self.cRollPid = [0.0, 0.0, 0.0] #kP,kI,kD
+        self.cPitchPid = [0.0, 0.0, 0.0]
+        self.cYawPid = [0.0, 0.0, 0.0]
+        self.cDepthPid = [0.0, 0.0, 0.0]
+        self.cflagMaster = False
+        self.cflagResetIMU = False
+        self.cflagResetStab = False
+        self.cflagRollStab = False
+        self.cflagPitchStab = False
+        self.cflagYawStab = False
+        self.cflagDepthStab = False
+        self.cflagUpdatePID = False
+        self.cflagLights = False
+        #данные телеметрии
+        self.tErrorsFlags = np.uint64(0) 
+        self.tRoll = 0.0
+        self.tPitch = 0.0
+        self.tYaw = 0.0
+        self.tDepth = 0.0 
+        self.tCharge = 0.0
+        self.tVolts = 0.0
+        self.tAmps = 0.0
+        self.tRollSP = 0.0
+        self.tPitchSP = 0.0
+        
+        # Запускаем асинхронный UDP сервер в отдельном потоке
+        self.udp_thread = AsyncioThread(self.remoteIP, self.remotePort)
+        self.udp_thread.start()
+        
         #self.replace_widget_with_custom(self.ui.centralwidget.layout(), QLineEdit, CustomLineEdit)
                 # инициализируем интерфейс в главном окне
         self.setup_connections()        # создаём обработчики событий
 
                 # Таймер для отправки данных
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.send_data)
-        self.timer.start(2000)  # Отправляем данные каждые 2 секунды
+        self.controlTimer = QTimer()
+        self.controlTimer.timeout.connect(self.sendControl)   
+        self.controlTimer.start(2000)
+        
+        
+    def telemetryUpdate(self):
+        self.ui.rollVal.setText(str(self.udp_thread.udpServer.tRoll))
+        self.ui.pitchVal.setText(str(self.udp_thread.udpServer.tPitch))
+        self.ui.yawVal.setText(str(self.udp_thread.udpServer.tYaw))
+        self.ui.depthVal.setText(str(self.udp_thread.udpServer.tDepth))
+        self.ui.voltageVal.setText(str(self.udp_thread.udpServer.tVolts))
+        self.ui.chargeVal.setText(str(self.udp_thread.udpServer.tCharge))
+        self.ui.currentVal.setText(str(self.udp_thread.udpServer.tAmps))
+        self.ui.rollSPVal.setText(str(self.udp_thread.udpServer.tRollSP))
+        self.ui.pitchSPVal.setText(str(self.udp_thread.udpServer.tPitchSP))
 
-        # Запускаем асинхронный UDP сервер в отдельном потоке
-        self.udp_thread = AsyncioThread()
-        self.udp_thread.start()
 
     def setup_connections(self):
         # Пример подключения событий к интерфейсу
         self.ui.settingsBut.clicked.connect(self.settings_button_click)  # подключаем кнопку
         self.ui.controlsBut.clicked.connect(self.controls_button_click)
+        self.ui.connectButton.clicked.connect(self.connectionButtonClick)
 
     def settings_button_click(self):
         # Пример реакции на нажатие кнопки
@@ -80,6 +154,11 @@ class MainWindow(QMainWindow):
         settingsDialog.exec()
         print(self.controlsDialog.num)
         
+    def connectionButtonClick(self):
+        print('Connection attempt to:' + self.remoteIP + ':' + str(self.remotePort)) 
+        self.connectToRemote()
+        self.connected = True
+
 
     def controls_button_click(self):
         # Пример реакции на нажатие кнопки
@@ -93,20 +172,53 @@ class MainWindow(QMainWindow):
 
     def on_right_click(self):
         print("Правая кнопка мыши нажата на кнопке")
+        
+    def connectToRemote(self):
+        startPacket = struct.pack("=BB", 0xAA, 0xFF)
+        self.udp_thread.transport.sendto(startPacket, (self.remoteIP, self.remotePort))
 
-    async def start_udp_server(self):
-        print("Starting UDP server...")
-        self.transport, self.protocol = await self.loop.create_datagram_endpoint(
-            lambda: UDPServer(), local_addr=('127.0.0.1', 9999)
-        )
-
-    def send_data(self):
+    def sendControl(self):
+        if not self.connected:
+            return
         # Отправляем данные из lineEdit1 на сервер
-        text = self.controlsDialog.getLineEditText("primaryForward")
-        print(text)
-        if text:
-            self.transport.sendto(text.encode(), ('127.0.0.1', 9999))
-            print(f"Sent: {text}")
+        # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
+        # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_MASTERx         if self.cflagMaster     else self.cControlFlags & ~UDP_FLAGS_MASTERx
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_LIGHT_STATEx    if self.cflagLights     else self.cControlFlags & ~UDP_FLAGS_LIGHT_STATEx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_STAB_ROLLx      if self.cflagRollStab   else self.cControlFlags & ~UDP_FLAGS_STAB_ROLLx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_STAB_PITCHx     if self.cflagPitchStab  else self.cControlFlags & ~UDP_FLAGS_STAB_PITCHx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_STAB_YAWx       if self.cflagYawStab    else self.cControlFlags & ~UDP_FLAGS_STAB_YAWx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_STAB_DEPTHx     if self.cflagDepthStab  else self.cControlFlags & ~UDP_FLAGS_STAB_DEPTHx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_RESET_POSITIONx if self.cflagResetStab  else self.cControlFlags & ~UDP_FLAGS_RESET_POSITIONx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_RESET_IMUx      if self.cflagResetIMU   else self.cControlFlags & ~UDP_FLAGS_RESET_IMUx 
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_UPDATE_PIDx     if self.cflagUpdatePID  else self.cControlFlags & ~UDP_FLAGS_UPDATE_PIDx 
+        controlPacket = struct.pack("=Qffffffffffffffffffffff", 
+                                    self.cControlFlags,
+                                    self.cForwardThrust,
+                                    self.cStrafeThrust,
+                                    self.cVerticalThrust,
+                                    self.cYawThrust,
+                                    self.cRollInc,
+                                    self.cPitchInc,
+                                    self.cPowerTarget,
+                                    self.cCamRotate,
+                                    self.cManGrip,
+                                    self.cManRotate,
+                                    self.cRollPid[0],
+                                    self.cRollPid[1],
+                                    self.cRollPid[2],
+                                    self.cPitchPid[0],
+                                    self.cPitchPid[1],
+                                    self.cPitchPid[2],
+                                    self.cYawPid[0],
+                                    self.cYawPid[1],
+                                    self.cYawPid[2],
+                                    self.cDepthPid[0],
+                                    self.cDepthPid[1],
+                                    self.cDepthPid[2],)
+
+        self.udp_thread.transport.sendto(controlPacket, (self.remoteIP, self.remotePort))
+        self.telemetryUpdate()
 
 class SettingsDialog(QDialog):
     def __init__(self):
@@ -240,15 +352,36 @@ class ControlsDialog(QDialog):
 
 class UDPServer(asyncio.DatagramProtocol):
     def __init__(self):
-        print("sercer init")  # Ссылка на объект line edit
+        print("sercer init")
+        self.tErrorsFlags = np.uint64(0) 
+        self.tRoll = 0.0
+        self.tPitch = 0.0
+        self.tYaw = 0.0
+        self.tDepth = 0.0 
+        self.tCharge = 0.0
+        self.tVolts = 0.0
+        self.tAmps = 0.0
+        self.tRollSP = 0.0
+        self.tPitchSP = 0.0
 
     def connection_made(self, transport):
         self.transport = transport
         print("UDP Server started")
 
     def datagram_received(self, data, addr):
-        print(f"Received {data} from {addr}")
-        # Обновляем текст в lineEdit
+        #ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP
+        received = struct.unpack_from("=Qfffffffff", data)
+        self.tErrorsFlags = np.uint64(received[0])
+        self.tRoll = received[1]
+        self.tPitch = received[2]
+        self.tYaw = received[3]
+        self.tDepth = received[4]
+        self.tVolts = received[5]
+        self.tCharge = received[6]
+        self.tAmps = received[7]
+        self.tRollSP = received[8]
+        self.tPitchSP = received[9]
+        
 
     def error_received(self, exc):
         print(f"Error received: {exc}")
