@@ -3,10 +3,10 @@ from UI.controls_window import Ui_controlsDialog
 import json, os, pygame
 from PySide6.QtCore import QTimer, Signal, QThread
 from PySide6.QtWidgets import QDialog, QLineEdit, QComboBox
-from joystickInputDetector import DetectJoystickInput
+from joystickInputDetector import JoystickInputDetecto
 
 defaultControls = {
-    "Primary Device": "Xbox 360 Controller", "Secondary Device": "Keyboard",
+    "Primary Device": "Keyboard", "Secondary Device": "Keyboard",
     "Forward":                   {"Primary": {"Control": "", "Inverted": False},"Secondary": {"Control": "", "Inverted": False}},
     "Strafe":                    {"Primary": {"Control": "", "Inverted": False},"Secondary": {"Control": "", "Inverted": False}},
     "Vertical":                  {"Primary": {"Control": "", "Inverted": False},"Secondary": {"Control": "", "Inverted": False}},
@@ -117,12 +117,21 @@ class ControlsDialog(QDialog):
             "Reset position":            {"Primary": "primaryPosReset",      "Secondary": "secondaryPosReset"},
             "Master":                    {"Primary": "primaryMaster",        "Secondary": "secondaryMaster"}
             }
+        
+        for control, value in self.controlsToInversionsMap.items():
+            value["Primary"].stateChanged.connect(self.setinversionOnCheckBox)
+            value["Secondary"].stateChanged.connect(self.setinversionOnCheckBox)
 
     def primaryDeviceSelected(self, index):
         if self.ignoreChanges:
             return
         self.controlProfile["Primary Device"] = self.ui.primaryDeviceList.itemText(index)
         print("Primary device selected: " + self.controlProfile["Primary Device"])
+        
+    def setinversionOnCheckBox(self):
+        for control, value in self.controlsToInversionsMap.items():
+            self.controlProfile[control]["Primary"]["Inverted"] = value["Primary"].isChecked()
+            self.controlProfile[control]["Secondary"]["Inverted"] = value["Secondary"].isChecked()
     
     def secondaryDeviceSelected(self, index):
         if self.ignoreChanges:
@@ -241,16 +250,56 @@ class ControlsDialog(QDialog):
             device = self.controlProfile["Secondary Device"]
 
         self.currentInput = [control, type]
-        self.joystick_thread = DetectJoystickInput(self.pyg, self.joystick, device)
+        self.joystick_thread = JoystickInputDetecto(self.pyg, self.joystick, device)
         if control in self.controlsToInversionsMap:
             self.joystick_thread.axis_moved.connect(self.onGamepadAxesDetected)
         else:
             self.joystick_thread.button_pressed.connect(self.onGameadButtonDetected)
             self.joystick_thread.button_released.connect(self.onGameadButtonDetected)
+            self.joystick_thread.dpad_moved.connect(self.onGamePadDpad)
+            if device == "Keyboard":
+                self.joystick_thread.keyboard_press.connect(self.onKeyboardKeyDetected)
 
         self.joystick_thread.start()
         #self.setCustomLineEditText(self.controlsToEditsMap[control][type],type + control)
 
+    def onGamePadDpad(self, x, y):
+        if not x and not y:
+            return
+        control = self.currentInput[0]
+        type = self.currentInput[1]
+        if not control or not type:
+            return
+        self.currentInput = ["",""]        
+        self.joystick_thread.stop()
+        self.controlProfile[control][type]["Control"] = "Dpad " + str(x)+";"+str(y)
+        dpadName = ""
+        self.joystick_thread.stop()
+        if (x, y) == (0, 1):
+            dpadName = ("D-Pad Up")
+        elif (x, y) == (0, -1):
+            dpadName = ("D-Pad Down")
+        elif (x, y) == (-1, 0):
+            dpadName = ("D-Pad Left")
+        elif (x, y) == (1, 0):
+            dpadName = ("D-Pad Right")
+        self.stopCountdown("Control - Input " + dpadName + " is set for " + type + " " + control)
+        self.setCustomLineEditText(self.controlsToEditsMap[control][type], dpadName)
+        print(self.controlProfile[control][type])
+        
+    def onKeyboardKeyDetected(self, key):        
+        control = self.currentInput[0]
+        type = self.currentInput[1]
+        if not control or not type:
+            return
+        self.currentInput = ["",""]        
+        self.joystick_thread.stop()
+        self.controlProfile[control][type]["Control"] = key
+        self.joystick_thread.stop()
+        self.stopCountdown("Control - Input " + key + " is set for " + type + " " + control)
+        self.setCustomLineEditText(self.controlsToEditsMap[control][type],"Key " + key)
+        print(self.controlProfile[control][type])
+    
     def onGameadButtonDetected(self, button):        
         control = self.currentInput[0]
         type = self.currentInput[1]
@@ -282,6 +331,7 @@ class ControlsDialog(QDialog):
             return
         if self.progressValue:            
             self.stopCountdown("Controls - Input canceled")
+            self.currentInput = ["",""]
             return
         control, type, inv = self.findLinkedControl(name)
         self.controlProfile[control][type]["Control"] = ""

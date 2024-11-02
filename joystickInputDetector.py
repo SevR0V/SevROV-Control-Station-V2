@@ -1,10 +1,12 @@
 import pygame
 from PySide6.QtCore import QThread, Signal
 
-class DetectJoystickInput(QThread):
+class JoystickInputDetecto(QThread):
     button_pressed = Signal(int)
     button_released = Signal(int)
-    axis_moved = Signal(int, float)
+    axis_moved = Signal(int, float)    
+    dpad_moved = Signal(int, int)
+    keyboard_press = Signal(str)
 
     def __init__(self, pyg: pygame, joystick: pygame.joystick, joystickName):
         super().__init__()
@@ -27,10 +29,12 @@ class DetectJoystickInput(QThread):
                 self.stop()
 
     def run(self):
-        if self.joystick_index == -1:
+        if (self.joystick_index == -1) and not (self.joystickName == "Keyboard"):
             return
-        joystick = self.joystick.Joystick(self.joystick_index)
-        joystick.init()
+        joystick= None
+        if not (self.joystickName == "Keyboard"):
+            joystick = self.joystick.Joystick(self.joystick_index)
+            joystick.init()
         while self.running:
             for event in self.pyg.event.get():
                 if event.type == self.pyg.JOYBUTTONDOWN:
@@ -38,9 +42,20 @@ class DetectJoystickInput(QThread):
                 elif event.type == self.pyg.JOYBUTTONUP:
                     self.button_released.emit(event.button)
                 elif event.type == self.pyg.JOYAXISMOTION:
-                    axis_value = joystick.get_axis(event.axis)
-                    if abs(axis_value) > 0.6:
-                        self.axis_moved.emit(event.axis, axis_value)
+                    if joystick:
+                        axis_value = joystick.get_axis(event.axis)
+                        if abs(axis_value) >= 0.5:
+                            self.axis_moved.emit(event.axis, axis_value)
+                elif event.type == self.pyg.JOYHATMOTION:
+                    x, y = event.value
+                    self.dpad_moved.emit(x, y)
+                elif self.joystickName == "Keyboard":
+                    if event.type == self.pyg.KEYDOWN:
+                        key = event.key
+                        self.keyboard_press.emit(key)
+                        
+
+
 
     def stop(self):
         self.running = False
