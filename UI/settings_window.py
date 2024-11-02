@@ -219,12 +219,12 @@ class Ui_settingsDialog(object):
 
         self.verticalLayout_5.addWidget(self.yawKIval)
 
-        self.yawKIval_2 = QDoubleSpinBox(self.groupBox_2)
-        self.yawKIval_2.setObjectName(u"yawKIval_2")
-        self.yawKIval_2.setMaximum(99999.000000000000000)
-        self.yawKIval_2.setSingleStep(0.100000000000000)
+        self.depthKIval = QDoubleSpinBox(self.groupBox_2)
+        self.depthKIval.setObjectName(u"depthKIval")
+        self.depthKIval.setMaximum(99999.000000000000000)
+        self.depthKIval.setSingleStep(0.100000000000000)
 
-        self.verticalLayout_5.addWidget(self.yawKIval_2)
+        self.verticalLayout_5.addWidget(self.depthKIval)
 
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_5)
@@ -260,12 +260,12 @@ class Ui_settingsDialog(object):
 
         self.verticalLayout_6.addWidget(self.yawKDval)
 
-        self.yawKDval_2 = QDoubleSpinBox(self.groupBox_2)
-        self.yawKDval_2.setObjectName(u"yawKDval_2")
-        self.yawKDval_2.setMaximum(99999.000000000000000)
-        self.yawKDval_2.setSingleStep(0.010000000000000)
+        self.depthKDval = QDoubleSpinBox(self.groupBox_2)
+        self.depthKDval.setObjectName(u"depthKDval")
+        self.depthKDval.setMaximum(99999.000000000000000)
+        self.depthKDval.setSingleStep(0.010000000000000)
 
-        self.verticalLayout_6.addWidget(self.yawKDval_2)
+        self.verticalLayout_6.addWidget(self.depthKDval)
 
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_6)

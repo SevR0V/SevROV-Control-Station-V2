@@ -23,23 +23,22 @@ class Ui_controlsDialog(object):
     def setupUi(self, controlsDialog):
         if not controlsDialog.objectName():
             controlsDialog.setObjectName(u"controlsDialog")
-        controlsDialog.resize(496, 852)
+        controlsDialog.resize(496, 1087)
         controlsDialog.setMinimumSize(QSize(496, 852))
         controlsDialog.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.horizontalLayout_27 = QHBoxLayout(controlsDialog)
-        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
-        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2 = QVBoxLayout(controlsDialog)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.layput = QVBoxLayout()
+        self.layput.setObjectName(u"layput")
         self.inputProgressBar = QProgressBar(controlsDialog)
         self.inputProgressBar.setObjectName(u"inputProgressBar")
         self.inputProgressBar.setMaximumSize(QSize(16777215, 10))
+        self.inputProgressBar.setMaximum(5000)
         self.inputProgressBar.setValue(0)
         self.inputProgressBar.setTextVisible(False)
 
-        self.verticalLayout_2.addWidget(self.inputProgressBar)
+        self.layput.addWidget(self.inputProgressBar)
 
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_23 = QHBoxLayout()
         self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
         self.label = QLabel(controlsDialog)
@@ -55,7 +54,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_23.addWidget(self.primaryDeviceList)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_23)
+        self.layput.addLayout(self.horizontalLayout_23)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -72,10 +71,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout.addWidget(self.secondaryDeviceList)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
-
-
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.layput.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_22 = QHBoxLayout()
         self.horizontalLayout_22.setObjectName(u"horizontalLayout_22")
@@ -118,13 +114,13 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_22.addWidget(self.label_6)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_22)
+        self.layput.addLayout(self.horizontalLayout_22)
 
         self.label_31 = QLabel(controlsDialog)
         self.label_31.setObjectName(u"label_31")
         self.label_31.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout_2.addWidget(self.label_31)
+        self.layput.addWidget(self.label_31)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -171,7 +167,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_2.addWidget(self.secondaryForwardInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.layput.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -216,7 +212,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_3.addWidget(self.secondaryStrafeInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.layput.addLayout(self.horizontalLayout_3)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -261,7 +257,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_4.addWidget(self.secondaryVerticalInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+        self.layput.addLayout(self.horizontalLayout_4)
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
@@ -306,7 +302,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_5.addWidget(self.secondaryYawInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
+        self.layput.addLayout(self.horizontalLayout_5)
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
@@ -351,7 +347,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_6.addWidget(self.secondaryRollInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_6)
+        self.layput.addLayout(self.horizontalLayout_6)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
@@ -396,7 +392,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_7.addWidget(self.secondaryPitchInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
+        self.layput.addLayout(self.horizontalLayout_7)
 
         self.horizontalLayout_12 = QHBoxLayout()
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
@@ -441,7 +437,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_12.addWidget(self.secondaryCamAngleInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
+        self.layput.addLayout(self.horizontalLayout_12)
 
         self.horizontalLayout_13 = QHBoxLayout()
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
@@ -486,7 +482,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_13.addWidget(self.secondaryManRotInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_13)
+        self.layput.addLayout(self.horizontalLayout_13)
 
         self.horizontalLayout_16 = QHBoxLayout()
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
@@ -531,7 +527,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_16.addWidget(self.secondaryManGripInv)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_16)
+        self.layput.addLayout(self.horizontalLayout_16)
 
         self.label_32 = QLabel(controlsDialog)
         self.label_32.setObjectName(u"label_32")
@@ -539,7 +535,223 @@ class Ui_controlsDialog(object):
         self.label_32.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.label_32.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout_2.addWidget(self.label_32)
+        self.layput.addWidget(self.label_32)
+
+        self.horizontalLayout_27 = QHBoxLayout()
+        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
+        self.label_33 = QLabel(controlsDialog)
+        self.label_33.setObjectName(u"label_33")
+        self.label_33.setMinimumSize(QSize(140, 0))
+        self.label_33.setMaximumSize(QSize(140, 16777215))
+        self.label_33.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_27.addWidget(self.label_33)
+
+        self.primaryForwardBut = QLineEdit(controlsDialog)
+        self.primaryForwardBut.setObjectName(u"primaryForwardBut")
+        self.primaryForwardBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryForwardBut.setReadOnly(True)
+
+        self.horizontalLayout_27.addWidget(self.primaryForwardBut)
+
+        self.secondaryForwardBut = QLineEdit(controlsDialog)
+        self.secondaryForwardBut.setObjectName(u"secondaryForwardBut")
+        self.secondaryForwardBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryForwardBut.setReadOnly(True)
+
+        self.horizontalLayout_27.addWidget(self.secondaryForwardBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_27)
+
+        self.horizontalLayout_28 = QHBoxLayout()
+        self.horizontalLayout_28.setObjectName(u"horizontalLayout_28")
+        self.label_34 = QLabel(controlsDialog)
+        self.label_34.setObjectName(u"label_34")
+        self.label_34.setMinimumSize(QSize(140, 0))
+        self.label_34.setMaximumSize(QSize(140, 16777215))
+        self.label_34.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_28.addWidget(self.label_34)
+
+        self.primaryBackwardsBut = QLineEdit(controlsDialog)
+        self.primaryBackwardsBut.setObjectName(u"primaryBackwardsBut")
+        self.primaryBackwardsBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryBackwardsBut.setReadOnly(True)
+
+        self.horizontalLayout_28.addWidget(self.primaryBackwardsBut)
+
+        self.secondaryBackwardsBut = QLineEdit(controlsDialog)
+        self.secondaryBackwardsBut.setObjectName(u"secondaryBackwardsBut")
+        self.secondaryBackwardsBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryBackwardsBut.setReadOnly(True)
+
+        self.horizontalLayout_28.addWidget(self.secondaryBackwardsBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_28)
+
+        self.horizontalLayout_29 = QHBoxLayout()
+        self.horizontalLayout_29.setObjectName(u"horizontalLayout_29")
+        self.label_35 = QLabel(controlsDialog)
+        self.label_35.setObjectName(u"label_35")
+        self.label_35.setMinimumSize(QSize(140, 0))
+        self.label_35.setMaximumSize(QSize(140, 16777215))
+        self.label_35.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_29.addWidget(self.label_35)
+
+        self.primaryLeftBut = QLineEdit(controlsDialog)
+        self.primaryLeftBut.setObjectName(u"primaryLeftBut")
+        self.primaryLeftBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryLeftBut.setReadOnly(True)
+
+        self.horizontalLayout_29.addWidget(self.primaryLeftBut)
+
+        self.secondaryLeftBut = QLineEdit(controlsDialog)
+        self.secondaryLeftBut.setObjectName(u"secondaryLeftBut")
+        self.secondaryLeftBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryLeftBut.setReadOnly(True)
+
+        self.horizontalLayout_29.addWidget(self.secondaryLeftBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_29)
+
+        self.horizontalLayout_30 = QHBoxLayout()
+        self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
+        self.label_36 = QLabel(controlsDialog)
+        self.label_36.setObjectName(u"label_36")
+        self.label_36.setMinimumSize(QSize(140, 0))
+        self.label_36.setMaximumSize(QSize(140, 16777215))
+        self.label_36.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_30.addWidget(self.label_36)
+
+        self.primaryRightBut = QLineEdit(controlsDialog)
+        self.primaryRightBut.setObjectName(u"primaryRightBut")
+        self.primaryRightBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryRightBut.setReadOnly(True)
+
+        self.horizontalLayout_30.addWidget(self.primaryRightBut)
+
+        self.secondaryRightBut = QLineEdit(controlsDialog)
+        self.secondaryRightBut.setObjectName(u"secondaryRightBut")
+        self.secondaryRightBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryRightBut.setReadOnly(True)
+
+        self.horizontalLayout_30.addWidget(self.secondaryRightBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_30)
+
+        self.horizontalLayout_31 = QHBoxLayout()
+        self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
+        self.label_37 = QLabel(controlsDialog)
+        self.label_37.setObjectName(u"label_37")
+        self.label_37.setMinimumSize(QSize(140, 0))
+        self.label_37.setMaximumSize(QSize(140, 16777215))
+        self.label_37.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_31.addWidget(self.label_37)
+
+        self.primaryRotLeftBut = QLineEdit(controlsDialog)
+        self.primaryRotLeftBut.setObjectName(u"primaryRotLeftBut")
+        self.primaryRotLeftBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryRotLeftBut.setReadOnly(True)
+
+        self.horizontalLayout_31.addWidget(self.primaryRotLeftBut)
+
+        self.secondaryRotLeftBut = QLineEdit(controlsDialog)
+        self.secondaryRotLeftBut.setObjectName(u"secondaryRotLeftBut")
+        self.secondaryRotLeftBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryRotLeftBut.setReadOnly(True)
+
+        self.horizontalLayout_31.addWidget(self.secondaryRotLeftBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_31)
+
+        self.horizontalLayout_32 = QHBoxLayout()
+        self.horizontalLayout_32.setObjectName(u"horizontalLayout_32")
+        self.label_38 = QLabel(controlsDialog)
+        self.label_38.setObjectName(u"label_38")
+        self.label_38.setMinimumSize(QSize(140, 0))
+        self.label_38.setMaximumSize(QSize(140, 16777215))
+        self.label_38.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_32.addWidget(self.label_38)
+
+        self.primaryRotRightBut = QLineEdit(controlsDialog)
+        self.primaryRotRightBut.setObjectName(u"primaryRotRightBut")
+        self.primaryRotRightBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryRotRightBut.setReadOnly(True)
+
+        self.horizontalLayout_32.addWidget(self.primaryRotRightBut)
+
+        self.secondaryRotRightBut = QLineEdit(controlsDialog)
+        self.secondaryRotRightBut.setObjectName(u"secondaryRotRightBut")
+        self.secondaryRotRightBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryRotRightBut.setReadOnly(True)
+
+        self.horizontalLayout_32.addWidget(self.secondaryRotRightBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_32)
+
+        self.horizontalLayout_33 = QHBoxLayout()
+        self.horizontalLayout_33.setObjectName(u"horizontalLayout_33")
+        self.label_39 = QLabel(controlsDialog)
+        self.label_39.setObjectName(u"label_39")
+        self.label_39.setMinimumSize(QSize(140, 0))
+        self.label_39.setMaximumSize(QSize(140, 16777215))
+        self.label_39.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_33.addWidget(self.label_39)
+
+        self.primaryDownBut = QLineEdit(controlsDialog)
+        self.primaryDownBut.setObjectName(u"primaryDownBut")
+        self.primaryDownBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryDownBut.setReadOnly(True)
+
+        self.horizontalLayout_33.addWidget(self.primaryDownBut)
+
+        self.secondaryDownBut = QLineEdit(controlsDialog)
+        self.secondaryDownBut.setObjectName(u"secondaryDownBut")
+        self.secondaryDownBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryDownBut.setReadOnly(True)
+
+        self.horizontalLayout_33.addWidget(self.secondaryDownBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_33)
+
+        self.horizontalLayout_34 = QHBoxLayout()
+        self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
+        self.label_40 = QLabel(controlsDialog)
+        self.label_40.setObjectName(u"label_40")
+        self.label_40.setMinimumSize(QSize(140, 0))
+        self.label_40.setMaximumSize(QSize(140, 16777215))
+        self.label_40.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_34.addWidget(self.label_40)
+
+        self.primaryUpBut = QLineEdit(controlsDialog)
+        self.primaryUpBut.setObjectName(u"primaryUpBut")
+        self.primaryUpBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryUpBut.setReadOnly(True)
+
+        self.horizontalLayout_34.addWidget(self.primaryUpBut)
+
+        self.secondaryUpBut = QLineEdit(controlsDialog)
+        self.secondaryUpBut.setObjectName(u"secondaryUpBut")
+        self.secondaryUpBut.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryUpBut.setReadOnly(True)
+
+        self.horizontalLayout_34.addWidget(self.secondaryUpBut)
+
+
+        self.layput.addLayout(self.horizontalLayout_34)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -566,7 +778,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_8.addWidget(self.secondaryRollInc)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
+        self.layput.addLayout(self.horizontalLayout_8)
 
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
@@ -595,7 +807,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_9.addWidget(self.secondaryRollDec)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_9)
+        self.layput.addLayout(self.horizontalLayout_9)
 
         self.horizontalLayout_25 = QHBoxLayout()
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
@@ -624,7 +836,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_25.addWidget(self.secondaryPitchInc)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_25)
+        self.layput.addLayout(self.horizontalLayout_25)
 
         self.horizontalLayout_26 = QHBoxLayout()
         self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
@@ -653,7 +865,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_26.addWidget(self.secondaryPitchDec)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_26)
+        self.layput.addLayout(self.horizontalLayout_26)
 
         self.horizontalLayout_10 = QHBoxLayout()
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
@@ -682,36 +894,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_10.addWidget(self.secondaryCamUp)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_10)
-
-        self.horizontalLayout_14 = QHBoxLayout()
-        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
-        self.label_20 = QLabel(controlsDialog)
-        self.label_20.setObjectName(u"label_20")
-        self.label_20.setMinimumSize(QSize(140, 0))
-        self.label_20.setMaximumSize(QSize(140, 16777215))
-        self.label_20.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.horizontalLayout_14.addWidget(self.label_20)
-
-        self.primaryManLeft = QLineEdit(controlsDialog)
-        self.primaryManLeft.setObjectName(u"primaryManLeft")
-        self.primaryManLeft.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.primaryManLeft.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.primaryManLeft.setReadOnly(True)
-
-        self.horizontalLayout_14.addWidget(self.primaryManLeft)
-
-        self.secondaryManLeft = QLineEdit(controlsDialog)
-        self.secondaryManLeft.setObjectName(u"secondaryManLeft")
-        self.secondaryManLeft.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        self.secondaryManLeft.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.secondaryManLeft.setReadOnly(True)
-
-        self.horizontalLayout_14.addWidget(self.secondaryManLeft)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_14)
+        self.layput.addLayout(self.horizontalLayout_10)
 
         self.horizontalLayout_11 = QHBoxLayout()
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
@@ -740,7 +923,36 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_11.addWidget(self.secondaryCamDown)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
+        self.layput.addLayout(self.horizontalLayout_11)
+
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.label_20 = QLabel(controlsDialog)
+        self.label_20.setObjectName(u"label_20")
+        self.label_20.setMinimumSize(QSize(140, 0))
+        self.label_20.setMaximumSize(QSize(140, 16777215))
+        self.label_20.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_14.addWidget(self.label_20)
+
+        self.primaryManLeft = QLineEdit(controlsDialog)
+        self.primaryManLeft.setObjectName(u"primaryManLeft")
+        self.primaryManLeft.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.primaryManLeft.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        self.primaryManLeft.setReadOnly(True)
+
+        self.horizontalLayout_14.addWidget(self.primaryManLeft)
+
+        self.secondaryManLeft = QLineEdit(controlsDialog)
+        self.secondaryManLeft.setObjectName(u"secondaryManLeft")
+        self.secondaryManLeft.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.secondaryManLeft.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        self.secondaryManLeft.setReadOnly(True)
+
+        self.horizontalLayout_14.addWidget(self.secondaryManLeft)
+
+
+        self.layput.addLayout(self.horizontalLayout_14)
 
         self.horizontalLayout_15 = QHBoxLayout()
         self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
@@ -769,7 +981,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_15.addWidget(self.secondaryManRight)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_15)
+        self.layput.addLayout(self.horizontalLayout_15)
 
         self.horizontalLayout_17 = QHBoxLayout()
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
@@ -798,7 +1010,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_17.addWidget(self.secondaryManClose)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_17)
+        self.layput.addLayout(self.horizontalLayout_17)
 
         self.horizontalLayout_18 = QHBoxLayout()
         self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
@@ -827,7 +1039,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_18.addWidget(self.secondaryManOpen)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_18)
+        self.layput.addLayout(self.horizontalLayout_18)
 
         self.horizontalLayout_19 = QHBoxLayout()
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
@@ -856,7 +1068,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_19.addWidget(self.secondaryLightsOn)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_19)
+        self.layput.addLayout(self.horizontalLayout_19)
 
         self.horizontalLayout_20 = QHBoxLayout()
         self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
@@ -885,7 +1097,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_20.addWidget(self.secondaryPosReset)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_20)
+        self.layput.addLayout(self.horizontalLayout_20)
 
         self.horizontalLayout_21 = QHBoxLayout()
         self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
@@ -914,7 +1126,7 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_21.addWidget(self.secondaryMaster)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_21)
+        self.layput.addLayout(self.horizontalLayout_21)
 
         self.horizontalLayout_24 = QHBoxLayout()
         self.horizontalLayout_24.setObjectName(u"horizontalLayout_24")
@@ -939,10 +1151,10 @@ class Ui_controlsDialog(object):
         self.horizontalLayout_24.addWidget(self.loadProfileMan)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_24)
+        self.layput.addLayout(self.horizontalLayout_24)
 
 
-        self.horizontalLayout_27.addLayout(self.verticalLayout_2)
+        self.verticalLayout_2.addLayout(self.layput)
 
 
         self.retranslateUi(controlsDialog)
@@ -952,6 +1164,7 @@ class Ui_controlsDialog(object):
 
     def retranslateUi(self, controlsDialog):
         controlsDialog.setWindowTitle(QCoreApplication.translate("controlsDialog", u"Controls", None))
+        self.inputProgressBar.setFormat(QCoreApplication.translate("controlsDialog", u"%p%", None))
         self.label.setText(QCoreApplication.translate("controlsDialog", u"Primary Device:", None))
         self.label_2.setText(QCoreApplication.translate("controlsDialog", u"Secondary Device:", None))
         self.label_3.setText(QCoreApplication.translate("controlsDialog", u"Control", None))
@@ -988,13 +1201,21 @@ class Ui_controlsDialog(object):
         self.primaryManGripInv.setText("")
         self.secondaryManGripInv.setText("")
         self.label_32.setText(QCoreApplication.translate("controlsDialog", u"Buttons", None))
+        self.label_33.setText(QCoreApplication.translate("controlsDialog", u"Move forward", None))
+        self.label_34.setText(QCoreApplication.translate("controlsDialog", u"Move backwards", None))
+        self.label_35.setText(QCoreApplication.translate("controlsDialog", u"Move left", None))
+        self.label_36.setText(QCoreApplication.translate("controlsDialog", u"Move right", None))
+        self.label_37.setText(QCoreApplication.translate("controlsDialog", u"Rotate left", None))
+        self.label_38.setText(QCoreApplication.translate("controlsDialog", u"Rotate right", None))
+        self.label_39.setText(QCoreApplication.translate("controlsDialog", u"Move down", None))
+        self.label_40.setText(QCoreApplication.translate("controlsDialog", u"Move up", None))
         self.label_14.setText(QCoreApplication.translate("controlsDialog", u"Roll increment", None))
         self.label_15.setText(QCoreApplication.translate("controlsDialog", u"Roll decrement", None))
         self.label_29.setText(QCoreApplication.translate("controlsDialog", u"Pitch increment", None))
         self.label_30.setText(QCoreApplication.translate("controlsDialog", u"Pitch decrement", None))
         self.label_16.setText(QCoreApplication.translate("controlsDialog", u"Camera rotate up", None))
-        self.label_20.setText(QCoreApplication.translate("controlsDialog", u"Manipalator rotate left", None))
         self.label_17.setText(QCoreApplication.translate("controlsDialog", u"Camera rotate down", None))
+        self.label_20.setText(QCoreApplication.translate("controlsDialog", u"Manipalator rotate left", None))
         self.label_21.setText(QCoreApplication.translate("controlsDialog", u"Manipalator rotate right", None))
         self.label_23.setText(QCoreApplication.translate("controlsDialog", u"Manipulator grip close", None))
         self.label_24.setText(QCoreApplication.translate("controlsDialog", u"Manipulator grip open", None))

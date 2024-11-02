@@ -98,6 +98,12 @@
                  </item>
                  <item>
                   <widget class="QDoubleSpinBox" name="powerTargetVal">
+                   <property name="minimumSize">
+                    <size>
+                     <width>77</width>
+                     <height>0</height>
+                    </size>
+                   </property>
                    <property name="maximum">
                     <double>1.000000000000000</double>
                    </property>
@@ -128,37 +134,40 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QRadioButton" name="stabOn">
+           <widget class="QCheckBox" name="stabOn">
             <property name="text">
              <string>Enable Stabilization</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="rollStabOn">
+           <widget class="QCheckBox" name="rollStabOn">
             <property name="text">
              <string>Roll</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="pitchStabOn">
+           <widget class="QCheckBox" name="pitchStabOn">
             <property name="text">
              <string>Pitch</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="yawStabOn">
+           <widget class="QCheckBox" name="yawStabOn">
             <property name="text">
              <string>Yaw</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="depthStabOn">
+           <widget class="QCheckBox" name="depthStabOn">
             <property name="text">
              <string>Depth</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -417,20 +426,29 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
+                <widget class="QLineEdit" name="pitchSPVal_2">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Policy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
+                 <property name="minimumSize">
                   <size>
                    <width>60</width>
-                   <height>20</height>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -484,20 +502,29 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
+                <widget class="QLineEdit" name="pitchSPVal_3">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Policy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
+                 <property name="minimumSize">
                   <size>
                    <width>60</width>
-                   <height>20</height>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -551,20 +578,29 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
+                <widget class="QLineEdit" name="pitchSPVal_4">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Policy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
+                 <property name="minimumSize">
                   <size>
                    <width>60</width>
-                   <height>20</height>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -618,20 +654,29 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_5">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
+                <widget class="QLineEdit" name="pitchSPVal_5">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Policy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
+                 <property name="minimumSize">
                   <size>
                    <width>60</width>
-                   <height>20</height>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -685,20 +730,29 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
+                <widget class="QLineEdit" name="pitchSPVal_6">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Policy::Fixed</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
+                 <property name="minimumSize">
                   <size>
                    <width>60</width>
-                   <height>20</height>
+                   <height>0</height>
                   </size>
                  </property>
-                </spacer>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>

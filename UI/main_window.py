@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QMainWindow, QPushButton,
-    QRadioButton, QSizePolicy, QSpacerItem, QSplitter,
+from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QGroupBox,
+    QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+    QPushButton, QSizePolicy, QSpacerItem, QSplitter,
     QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
@@ -97,6 +97,7 @@ class Ui_MainWindow(object):
 
         self.powerTargetVal = QDoubleSpinBox(self.groupBox_3)
         self.powerTargetVal.setObjectName(u"powerTargetVal")
+        self.powerTargetVal.setMinimumSize(QSize(77, 0))
         self.powerTargetVal.setMaximum(1.000000000000000)
         self.powerTargetVal.setSingleStep(0.100000000000000)
 
@@ -121,28 +122,29 @@ class Ui_MainWindow(object):
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.verticalLayout_2 = QVBoxLayout(self.groupBox_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.stabOn = QRadioButton(self.groupBox_2)
+        self.stabOn = QCheckBox(self.groupBox_2)
         self.stabOn.setObjectName(u"stabOn")
 
         self.verticalLayout_2.addWidget(self.stabOn)
 
-        self.rollStabOn = QRadioButton(self.groupBox_2)
+        self.rollStabOn = QCheckBox(self.groupBox_2)
         self.rollStabOn.setObjectName(u"rollStabOn")
 
         self.verticalLayout_2.addWidget(self.rollStabOn)
 
-        self.pitchStabOn = QRadioButton(self.groupBox_2)
+        self.pitchStabOn = QCheckBox(self.groupBox_2)
         self.pitchStabOn.setObjectName(u"pitchStabOn")
 
         self.verticalLayout_2.addWidget(self.pitchStabOn)
 
-        self.yawStabOn = QRadioButton(self.groupBox_2)
+        self.yawStabOn = QCheckBox(self.groupBox_2)
         self.yawStabOn.setObjectName(u"yawStabOn")
 
         self.verticalLayout_2.addWidget(self.yawStabOn)
 
-        self.depthStabOn = QRadioButton(self.groupBox_2)
+        self.depthStabOn = QCheckBox(self.groupBox_2)
         self.depthStabOn.setObjectName(u"depthStabOn")
+        self.depthStabOn.setChecked(False)
 
         self.verticalLayout_2.addWidget(self.depthStabOn)
 
@@ -261,9 +263,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.yawVal)
 
-        self.horizontalSpacer_2 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.pitchSPVal_2 = QLineEdit(self.groupBox_4)
+        self.pitchSPVal_2.setObjectName(u"pitchSPVal_2")
+        self.pitchSPVal_2.setEnabled(False)
+        self.pitchSPVal_2.setMinimumSize(QSize(60, 0))
+        self.pitchSPVal_2.setMaximumSize(QSize(60, 16777215))
+        self.pitchSPVal_2.setReadOnly(True)
+        self.pitchSPVal_2.setClearButtonEnabled(False)
 
-        self.horizontalLayout_8.addItem(self.horizontalSpacer_2)
+        self.horizontalLayout_8.addWidget(self.pitchSPVal_2)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_8)
@@ -288,9 +296,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_9.addWidget(self.depthVal)
 
-        self.horizontalSpacer_3 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.pitchSPVal_3 = QLineEdit(self.groupBox_4)
+        self.pitchSPVal_3.setObjectName(u"pitchSPVal_3")
+        self.pitchSPVal_3.setEnabled(False)
+        self.pitchSPVal_3.setMinimumSize(QSize(60, 0))
+        self.pitchSPVal_3.setMaximumSize(QSize(60, 16777215))
+        self.pitchSPVal_3.setReadOnly(True)
+        self.pitchSPVal_3.setClearButtonEnabled(False)
 
-        self.horizontalLayout_9.addItem(self.horizontalSpacer_3)
+        self.horizontalLayout_9.addWidget(self.pitchSPVal_3)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_9)
@@ -315,9 +329,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_10.addWidget(self.chargeVal)
 
-        self.horizontalSpacer_4 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.pitchSPVal_4 = QLineEdit(self.groupBox_4)
+        self.pitchSPVal_4.setObjectName(u"pitchSPVal_4")
+        self.pitchSPVal_4.setEnabled(False)
+        self.pitchSPVal_4.setMinimumSize(QSize(60, 0))
+        self.pitchSPVal_4.setMaximumSize(QSize(60, 16777215))
+        self.pitchSPVal_4.setReadOnly(True)
+        self.pitchSPVal_4.setClearButtonEnabled(False)
 
-        self.horizontalLayout_10.addItem(self.horizontalSpacer_4)
+        self.horizontalLayout_10.addWidget(self.pitchSPVal_4)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_10)
@@ -342,9 +362,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_11.addWidget(self.voltageVal)
 
-        self.horizontalSpacer_5 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.pitchSPVal_5 = QLineEdit(self.groupBox_4)
+        self.pitchSPVal_5.setObjectName(u"pitchSPVal_5")
+        self.pitchSPVal_5.setEnabled(False)
+        self.pitchSPVal_5.setMinimumSize(QSize(60, 0))
+        self.pitchSPVal_5.setMaximumSize(QSize(60, 16777215))
+        self.pitchSPVal_5.setReadOnly(True)
+        self.pitchSPVal_5.setClearButtonEnabled(False)
 
-        self.horizontalLayout_11.addItem(self.horizontalSpacer_5)
+        self.horizontalLayout_11.addWidget(self.pitchSPVal_5)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_11)
@@ -369,9 +395,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.currentVal)
 
-        self.horizontalSpacer_6 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.pitchSPVal_6 = QLineEdit(self.groupBox_4)
+        self.pitchSPVal_6.setObjectName(u"pitchSPVal_6")
+        self.pitchSPVal_6.setEnabled(False)
+        self.pitchSPVal_6.setMinimumSize(QSize(60, 0))
+        self.pitchSPVal_6.setMaximumSize(QSize(60, 16777215))
+        self.pitchSPVal_6.setReadOnly(True)
+        self.pitchSPVal_6.setClearButtonEnabled(False)
 
-        self.horizontalLayout_12.addItem(self.horizontalSpacer_6)
+        self.horizontalLayout_12.addWidget(self.pitchSPVal_6)
 
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_12)

@@ -378,7 +378,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QDoubleSpinBox" name="yawKIval_2">
+               <widget class="QDoubleSpinBox" name="depthKIval">
                 <property name="maximum">
                  <double>99999.000000000000000</double>
                 </property>
@@ -444,7 +444,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QDoubleSpinBox" name="yawKDval_2">
+               <widget class="QDoubleSpinBox" name="depthKDval">
                 <property name="maximum">
                  <double>99999.000000000000000</double>
                 </property>
