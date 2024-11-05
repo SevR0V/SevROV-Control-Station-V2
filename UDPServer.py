@@ -5,7 +5,7 @@ import time
 
 class UDPServer(asyncio.DatagramProtocol):
     def __init__(self):
-        print("sercer init")
+        print("Server init")
         self.tErrorsFlags = np.uint64(0)
         self.tRoll = 0.0
         self.tPitch = 0.0

@@ -40,7 +40,8 @@ defaultControls = {
 }
 
 class ControlsDialog(QDialog):
-    def __init__(self):
+    def __init__(self, parentApp):
+        self.parentApp = parentApp
         super(ControlsDialog, self).__init__()
         self.ui = Ui_controlsDialog()
         self.ui.setupUi(self)
@@ -125,11 +126,18 @@ class ControlsDialog(QDialog):
         self.ui.saveProfileBut.clicked.connect(self.onSaveButton)
         self.ui.loadProfileMan.clicked.connect(self.onLoadButton)
 
+    def updateDevicesInParent(self):
+        # self.parentApp.primaryJoystick = self.controlProfile["Primary Device"]
+        # self.parentApp.secondaryJoystick = self.controlProfile["Secondary Device"]
+        self.parentApp.primaryIdx = self.parentApp.getJoystickIndex(self.controlProfile["Primary Device"])
+        self.parentApp.secondaryIdx = self.parentApp.getJoystickIndex(self.controlProfile["Secondary Device"])
+    
     def primaryDeviceSelected(self, index):
         if self.ignoreChanges:
             return
         self.controlProfile["Primary Device"] = self.ui.primaryDeviceList.itemText(index)
         print("Primary device selected: " + self.controlProfile["Primary Device"])
+        self.updateDevicesInParent()
         
     def setinversionOnCheckBox(self):
         for control, value in self.controlsToInversionsMap.items():
@@ -141,6 +149,7 @@ class ControlsDialog(QDialog):
             return
         self.controlProfile["Secondary Device"] = self.ui.secondaryDeviceList.itemText(index)
         print("Secondary device selected: " + self.controlProfile["Secondary Device"])
+        self.updateDevicesInParent()
     
     def getInputDevices(self):
         if not pygame.get_init():
@@ -160,6 +169,7 @@ class ControlsDialog(QDialog):
         if self.joystick_thread:
             self.joystick_thread.stop()
         event.accept()
+        self.updateDevicesInParent()
     
     def getQComboBoxItems(self, comboBox: QComboBox):
         items = [comboBox.itemText(i) for i in range(comboBox.count())]
@@ -194,7 +204,11 @@ class ControlsDialog(QDialog):
             if control in self.controlsToInversionsMap:
                 self.controlsToInversionsMap[control]["Primary"].setChecked(value["Primary"]["Inverted"])
                 self.controlsToInversionsMap[control]["Secondary"].setChecked(value["Secondary"]["Inverted"])
+        for control, value in self.controlsToInversionsMap.items():
+            value["Primary"].setChecked(self.controlProfile[control]["Primary"]["Inverted"])
+            value["Secondary"].setChecked(self.controlProfile[control]["Secondary"]["Inverted"])
         self.ignoreChanges = False
+        self.updateDevicesInParent()
 
     def startCoundown(self):
         self.progressValue = 5000
@@ -313,6 +327,7 @@ class ControlsDialog(QDialog):
         self.stopCountdown("Control - Input " + dpadName + " is set for " + type + " " + control)
         self.setCustomLineEditText(self.controlsToEditsMap[control][type], dpadName)
         print(self.controlProfile[control][type])
+        self.updateDevicesInParent()
         
     def onKeyboardKeyDetected(self, key):        
         control = self.currentInput[0]
@@ -325,6 +340,7 @@ class ControlsDialog(QDialog):
         self.stopCountdown("Control - Input " + key + " is set for " + type + " " + control)
         self.setCustomLineEditText(self.controlsToEditsMap[control][type],"Key " + key)
         print(self.controlProfile[control][type])
+        self.updateDevicesInParent()
     
     def onGameadButtonDetected(self, button):        
         control = self.currentInput[0]
@@ -337,6 +353,7 @@ class ControlsDialog(QDialog):
         self.stopCountdown("Control - Input Button " + str(button) + " is set for " + type + " " + control)
         self.setCustomLineEditText(self.controlsToEditsMap[control][type],"Button " + str(button))
         print(self.controlProfile[control][type])
+        self.updateDevicesInParent()
 
     def onGamepadAxesDetected(self, axis):
         control = self.currentInput[0]
@@ -350,6 +367,7 @@ class ControlsDialog(QDialog):
         self.stopCountdown("Control - Input Axis " + str(axis) + " is set for " + type + " " + control)
         self.setCustomLineEditText(self.controlsToEditsMap[control][type],"Axis " + str(axis))
         print(self.controlProfile[control][type])
+        self.updateDevicesInParent()
 
     def controlMapRC(self, name):
         if name == "profileNameVal":
@@ -362,6 +380,7 @@ class ControlsDialog(QDialog):
         self.controlProfile[control][type]["Control"] = ""
         self.setWindowTitle("Controls - Input for " + control + " cleared")
         self.setCustomLineEditText(name, "")
+        self.updateDevicesInParent()
 
     def get_line_edit(self, name):
         for line_edit in self.custom_line_edits:

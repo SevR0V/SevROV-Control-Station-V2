@@ -11,8 +11,8 @@ import numpy as np
 
 #ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP
 
-JOYSTICK_DEADZONE = 0.1
-TIMER_PERIOD_MS = 10
+JOYSTICK_DEADZONE = 0.03
+TIMER_PERIOD_MS = 50
 
 UDP_FLAGS_MASTERx = np.uint64(1 << 0)
 UDP_FLAGS_LIGHT_STATEx = np.uint64(1 << 1)
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.primaryJoystick = None
         self.secondaryJoystick = None
 
-        self.controlsDialog = ControlsDialog()
+        self.controlsDialog = ControlsDialog(self)
         self.settingsDialog = SettingsDialog() 
 
         self.stabEnable = False
@@ -111,13 +111,13 @@ class MainWindow(QMainWindow):
         self.remotePort = self.settingsDialog.settings["Port"]
     
     def telemetryUpdate(self):
-        self.ui.rollVal.setText(str(self.udp_thread.udpServer.tRoll))
-        self.ui.pitchVal.setText(str(self.udp_thread.udpServer.tPitch))
-        self.ui.yawVal.setText(str(self.udp_thread.udpServer.tYaw))
-        self.ui.depthVal.setText(str(self.udp_thread.udpServer.tDepth))
-        self.ui.voltageVal.setText(str(self.udp_thread.udpServer.tVolts))
-        self.ui.chargeVal.setText(str(self.udp_thread.udpServer.tCharge))
-        self.ui.currentVal.setText(str(self.udp_thread.udpServer.tAmps))
+        self.ui.rollVal.setText(str("%.2f"%self.udp_thread.udpServer.tRoll))
+        self.ui.pitchVal.setText(str("%.2f"%self.udp_thread.udpServer.tPitch))
+        self.ui.yawVal.setText(str("%.2f"%self.udp_thread.udpServer.tYaw))
+        self.ui.depthVal.setText(str("%.2f"%self.udp_thread.udpServer.tDepth))
+        self.ui.voltageVal.setText(str("%.2f"%self.udp_thread.udpServer.tVolts))
+        self.ui.chargeVal.setText(str("%.2f"%self.udp_thread.udpServer.tCharge))
+        self.ui.currentVal.setText(str("%.2f"%self.udp_thread.udpServer.tAmps))
         self.ui.rollSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tRollSP))
         self.ui.pitchSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tPitchSP))
 
@@ -153,13 +153,17 @@ class MainWindow(QMainWindow):
         print('Connection attempt to: ' + self.remoteIP + ':' + str(self.remotePort)) 
         self.connectToRemote()
         self.connected = True
+        self.controlTimer.start(TIMER_PERIOD_MS)
 
     def controlsButtonClick(self):
         self.controlsDialog.exec()
         
     def connectToRemote(self):
         startPacket = struct.pack("=BB", 0xAA, 0xFF)
+        if self.udp_thread.isFinished:
+            self.udp_thread.start()
         self.udp_thread.transport.sendto(startPacket, (self.remoteIP, self.remotePort))
+        
 
     def joystickDeadzone(self, val, deadzone):
         if abs(val) <= deadzone:
@@ -292,6 +296,8 @@ class MainWindow(QMainWindow):
         if self.primaryIdx == -1:
             print("Primary joystick not found")
             return
+        if not pygame.joystick.get_init():
+            return
         else:
             if self.primaryJoystick:
                 if not (self.primaryJoystick.get_name == primaryJoystickName):
@@ -331,8 +337,8 @@ class MainWindow(QMainWindow):
         self.cPitchInc = self.control3(self.primaryJoystick, self.secondaryJoystick,
                                             "Pitch", "Pitch increment", "Pitch decrement")
         # Camera rotate
-        self.cCamRotate = self.buttonsControl2(self.primaryJoystick, self.secondaryJoystick,
-                                            "Camera rotate up", "Camera rotate down")
+        self.cCamRotate = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Camera angle","Camera rotate up", "Camera rotate down")
         # Manipulator rotate
         if ((primaryJoystickName == secondaryJoystickName) 
             and ((primaryJoystickName.lower().find("xbox") >= 0) 
@@ -380,9 +386,11 @@ class MainWindow(QMainWindow):
         ControlIdx = int(ControlIdx)
         #pygame.event.pump()
         if ControlType == "Axis":
-            Value = Joystick.get_axis(ControlIdx)
+            if ControlIdx < Joystick.get_numaxes():
+                Value = Joystick.get_axis(ControlIdx)
         if ControlType == "Button":
-            Value = Joystick.get_button(ControlIdx)
+            if ControlIdx < Joystick.get_numbuttons():
+                Value = Joystick.get_button(ControlIdx)
         if ControlType == "Dpad":
             DpadValues = ControlIdx.split(";")
             DpadValues[0] = int(DpadValues[0])
@@ -484,12 +492,11 @@ class MainWindow(QMainWindow):
                                     self.cDepthPid[0],
                                     self.cDepthPid[1],
                                     self.cDepthPid[2],)
-        print(*["%.2f" % elem for elem in struct.unpack_from("=Qffffffffffffffffffffff",controlPacket)], sep ='; ')
+        #print(*["%.2f" % elem for elem in struct.unpack_from("=Qffffffffffffffffffffff",controlPacket)], sep ='; ')
         try:
             self.udp_thread.transport.sendto(controlPacket, (self.remoteIP, self.remotePort))
         except Exception as ex:
             print(ex)
-            self.close()
         self.telemetryUpdate()
 
         if self.cflagResetIMU:
@@ -501,7 +508,7 @@ class MainWindow(QMainWindow):
             self.cflagUpdatePID = False
             self.settingsDialog.updatePID = False
             print("New PID constants has been sent") 
-            print(self.settings["PID"])
+            print(self.settingsDialog.settings["PID"])
 
         if self.cflagResetStab:
             self.cflagResetStab = False

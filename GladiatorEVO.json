@@ -14,7 +14,7 @@
     "Strafe": {
         "Primary": {
             "Control": "Axis 0",
-            "Inverted": true
+            "Inverted": false
         },
         "Secondary": {
             "Control": "",
@@ -63,11 +63,11 @@
     },
     "Camera angle": {
         "Primary": {
-            "Control": "",
+            "Control": "Axis 4",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Axis 4",
             "Inverted": false
         }
     },
@@ -277,7 +277,7 @@
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 2",
             "Inverted": false
         }
     },

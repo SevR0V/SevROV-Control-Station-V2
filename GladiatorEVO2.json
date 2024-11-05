@@ -1,10 +1,10 @@
 {
-    "Primary Device": "DualSense Wireless Controller",
-    "Secondary Device": "DualSense Wireless Controller",
+    "Primary Device": "VKBsim Gladiator EVO L",
+    "Secondary Device": "VKBsim Gladiator EVO R",
     "Forward": {
         "Primary": {
             "Control": "Axis 1",
-            "Inverted": true
+            "Inverted": false
         },
         "Secondary": {
             "Control": "",
@@ -23,8 +23,8 @@
     },
     "Vertical": {
         "Primary": {
-            "Control": "Axis 3",
-            "Inverted": true
+            "Control": "Axis 5",
+            "Inverted": false
         },
         "Secondary": {
             "Control": "",
@@ -33,11 +33,11 @@
     },
     "Yaw": {
         "Primary": {
-            "Control": "Axis 2",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Axis 5",
             "Inverted": false
         }
     },
@@ -47,7 +47,7 @@
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Axis 0",
             "Inverted": false
         }
     },
@@ -57,7 +57,7 @@
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Axis 1",
             "Inverted": false
         }
     },
@@ -73,11 +73,11 @@
     },
     "Manipulator rotate": {
         "Primary": {
-            "Control": "Axis 4",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "Axis 5",
+            "Control": "",
             "Inverted": false
         }
     },
@@ -173,7 +173,7 @@
     },
     "Roll increment": {
         "Primary": {
-            "Control": "Button 14",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -183,7 +183,7 @@
     },
     "Roll decrement": {
         "Primary": {
-            "Control": "Button 13",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -193,7 +193,7 @@
     },
     "Pitch increment": {
         "Primary": {
-            "Control": "Button 11",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -203,7 +203,7 @@
     },
     "Pitch decrement": {
         "Primary": {
-            "Control": "Button 12",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -213,21 +213,21 @@
     },
     "Camera rotate up": {
         "Primary": {
-            "Control": "Button 3",
+            "Control": "Button 24",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 24",
             "Inverted": false
         }
     },
     "Camera rotate down": {
         "Primary": {
-            "Control": "Button 0",
+            "Control": "Button 25",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 25",
             "Inverted": false
         }
     },
@@ -253,7 +253,7 @@
     },
     "Manipulator grip close": {
         "Primary": {
-            "Control": "Button 10",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -263,7 +263,7 @@
     },
     "Manipulator grip open": {
         "Primary": {
-            "Control": "Button 9",
+            "Control": "",
             "Inverted": false
         },
         "Secondary": {
@@ -277,27 +277,27 @@
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 2",
             "Inverted": false
         }
     },
     "Reset position": {
         "Primary": {
-            "Control": "Button 1",
+            "Control": "Button 3",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 3",
             "Inverted": false
         }
     },
     "Master": {
         "Primary": {
-            "Control": "Button 6",
+            "Control": "Button 21",
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 21",
             "Inverted": false
         }
     }
