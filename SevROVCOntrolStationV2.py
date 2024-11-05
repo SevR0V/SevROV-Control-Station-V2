@@ -1,5 +1,4 @@
-import sys, pygame
-import struct
+import sys, pygame, time, struct
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QTimer
 from AsyncioThread import AsyncioThread
@@ -11,6 +10,9 @@ import numpy as np
 # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
 
 #ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP
+
+JOYSTICK_DEADZONE = 0.1
+TIMER_PERIOD_MS = 10
 
 UDP_FLAGS_MASTERx = np.uint64(1 << 0)
 UDP_FLAGS_LIGHT_STATEx = np.uint64(1 << 1)
@@ -27,20 +29,24 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.masterStatus.setStyleSheet("color:green;")
+        self.ui.onlineStatus.setStyleSheet("color:red;")
+        self.primaryIdx = -1
+        self.secondaryIdx = -1
+        pygame.init()
+        pygame.joystick.init()
+        self.primaryJoystick = None
+        self.secondaryJoystick = None
 
-        
-        self.pyg = pygame
-        self.joystick = self.pyg.joystick
-        self.pyg.init()
-        self.joystick.init()
-
-        self.controlsDialog = ControlsDialog(self.pyg, self.joystick)
+        self.controlsDialog = ControlsDialog()
         self.settingsDialog = SettingsDialog() 
 
         self.stabEnable = False
         self.remoteIP = ""
         self.remotePort = 0
         self.connected = False
+        self.connectionTimeout = 0
+        self.maxTimeout = 1000/TIMER_PERIOD_MS
 
         # ROV control data
         self.cControlFlags = np.uint64(0)
@@ -89,10 +95,15 @@ class MainWindow(QMainWindow):
 
         self.controlTimer = QTimer()
         self.controlTimer.timeout.connect(self.sendControl)   
-        self.controlTimer.start(2000)
+        self.controlTimer.start(TIMER_PERIOD_MS)
+        self.masterChangeFlag = False
+        self.lightsChangeFlag =False
+        self.masterChangeCounter = 0
+        self.lightsChangeCounter = 0
+        self.firstTime = 0
+        self.secondTime = 0
 
     def onSettingsClose(self):
-        print('set cls')
         self.updateSettings()
         
     def updateSettings(self):        
@@ -107,14 +118,30 @@ class MainWindow(QMainWindow):
         self.ui.voltageVal.setText(str(self.udp_thread.udpServer.tVolts))
         self.ui.chargeVal.setText(str(self.udp_thread.udpServer.tCharge))
         self.ui.currentVal.setText(str(self.udp_thread.udpServer.tAmps))
-        self.ui.rollSPVal.setText(str(self.udp_thread.udpServer.tRollSP))
-        self.ui.pitchSPVal.setText(str(self.udp_thread.udpServer.tPitchSP))
+        self.ui.rollSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tRollSP))
+        self.ui.pitchSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tPitchSP))
 
     def setup_connections(self):
         self.ui.settingsBut.clicked.connect(self.settings_button_click)
         self.ui.controlsBut.clicked.connect(self.controlsButtonClick)
         self.ui.connectButton.clicked.connect(self.connectionButtonClick)
         self.settingsDialog.finished.connect(self.onSettingsClose)
+        self.controlsDialog.finished.connect(self.onControlsFinished)
+        self.ui.masterButton.clicked.connect(self.onMasterSwitchClick)
+        self.ui.positionResetBut.clicked.connect(self.resetPositionButtonClick)
+    
+    def onControlsFinished(self):
+        self.primaryIdx = -1
+        self.secondaryIdx = -1
+        self.primaryIdx = self.getJoystickIndex(self.controlsDialog.controlProfile["Primary Device"])
+        self.secondaryIdx = self.getJoystickIndex(self.controlsDialog.controlProfile["Secondary Device"])
+        self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
+        self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
+        self.primaryJoystick.init()
+        self.secondaryJoystick.init()
+        pygame.event.pump()
+        print("Joystick applied")
+
 
     def settings_button_click(self):
         self.settingsDialog.exec()
@@ -127,29 +154,264 @@ class MainWindow(QMainWindow):
         self.connectToRemote()
         self.connected = True
 
-    def controlsButtonClick(self):        
-        self.controlsDialog.updateControlsMapWindow()
+    def controlsButtonClick(self):
         self.controlsDialog.exec()
         
     def connectToRemote(self):
         startPacket = struct.pack("=BB", 0xAA, 0xFF)
         self.udp_thread.transport.sendto(startPacket, (self.remoteIP, self.remotePort))
 
+    def joystickDeadzone(self, val, deadzone):
+        if abs(val) <= deadzone:
+            return 0
+        if val > 0:
+            dzval = (val - deadzone) * (1/(1-deadzone))
+        else:
+            dzval = (val + deadzone) * (1/(1-deadzone))
+        return dzval
+
+    def getJoystickIndex(self, joystickName):
+        joystickIndex = -1
+        if not pygame.get_init():
+            pygame.init()
+        for i in range(pygame.joystick.get_count()):
+            joystick = pygame.joystick.Joystick(i)
+            joystick.init()
+            if joystickName == joystick.get_name():
+                joystickIndex = i
+                break
+            joystick.quit()
+        return joystickIndex
+
+    def control3(self, primaryJoystick, secondaryJoystick, control, altControl1, altControl2):
+        primaryValue = 0
+        secondaryValue = 0        
+        altVal1 = 0
+        altVal2 = 0
+        altSecondaryValue = 0
+        altPrimaryValue = 0
+        primaryInversion = False
+        secondaryInversion = False
+        mapping = self.controlsDialog.controlProfile[control]
+        altMapping1 = self.controlsDialog.controlProfile[altControl1]
+        altMapping2 = self.controlsDialog.controlProfile[altControl2]
+        altPrimaryControl1 = altMapping1["Primary"]["Control"]
+        altSecondaryControl1 = altMapping1["Secondary"]["Control"]
+        altPrimaryControl2 = altMapping2["Primary"]["Control"]
+        altSecondaryControl2 = altMapping2["Secondary"]["Control"]
+        primaryControl = mapping["Primary"]["Control"]
+        secondaryControl = mapping["Secondary"]["Control"]
+        primaryInversion = mapping["Primary"]["Inverted"]
+        secondaryInversion = mapping["Secondary"]["Inverted"]
+        if primaryControl:
+            primaryValue = self.getControlValue(primaryJoystick, primaryControl, primaryInversion)
+        if secondaryControl:
+            secondaryValue = self.getControlValue(secondaryJoystick, secondaryControl, secondaryInversion) if secondaryJoystick else 0
+        if altPrimaryControl1 and altPrimaryControl2:
+            altVal1 = self.getControlValue(primaryJoystick, altPrimaryControl1)
+            altVal2 = self.getControlValue(primaryJoystick, altPrimaryControl2)
+            altPrimaryValue = altVal1 - altVal2
+        if altSecondaryControl1 and altSecondaryControl2:
+            altVal1 = self.getControlValue(secondaryJoystick, altSecondaryControl1) if secondaryJoystick else 0
+            altVal2 = self.getControlValue(secondaryJoystick, altSecondaryControl2) if secondaryJoystick else 0
+            altSecondaryValue = altVal1 - altVal2
+
+        primaryValue = self.joystickDeadzone(primaryValue, JOYSTICK_DEADZONE)
+        secondaryValue = self.joystickDeadzone(secondaryValue, JOYSTICK_DEADZONE)
+        controlValue = altSecondaryValue if altSecondaryValue else 0
+        controlValue = altPrimaryValue if altPrimaryValue else controlValue
+        controlValue = secondaryValue if secondaryValue else controlValue
+        controlValue = primaryValue if primaryValue else controlValue
+        return controlValue
+    
+    def buttonsControl2(self, primaryJoystick, secondaryJoystick, Control1, Control2):    
+        Val1 = 0
+        Val2 = 0
+        SecondaryValue = 0
+        PrimaryValue = 0
+        Mapping1 = self.controlsDialog.controlProfile[Control1]
+        Mapping2 = self.controlsDialog.controlProfile[Control2]
+        PrimaryControl1 = Mapping1["Primary"]["Control"]
+        SecondaryControl1 = Mapping1["Secondary"]["Control"]
+        PrimaryControl2 = Mapping2["Primary"]["Control"]
+        SecondaryControl2 = Mapping2["Secondary"]["Control"]
+        if PrimaryControl1 and PrimaryControl2:
+            Val1 = self.getControlValue(primaryJoystick, PrimaryControl1)
+            Val2 = self.getControlValue(primaryJoystick, PrimaryControl2)
+            PrimaryValue = Val1 - Val2
+        if SecondaryControl1 and SecondaryControl2:
+            Val1 = self.getControlValue(secondaryJoystick, SecondaryControl1) if secondaryJoystick else 0
+            Val2 = self.getControlValue(secondaryJoystick, SecondaryControl2) if secondaryJoystick else 0
+            SecondaryValue = Val1 - Val2
+        controlValue = SecondaryValue if SecondaryValue else 0
+        controlValue = PrimaryValue if PrimaryValue else controlValue
+        return controlValue
+    
+    def triggersControlToOneVal(self, joystick, control):
+        # ONLY FOR JOYSTICKS WITH TRIGGERS 
+        secondaryValue = 0
+        primaryValue = 0
+        resultValue = 0 
+        primaryInversion = False
+        secondaryInversion = False
+        mapping = self.controlsDialog.controlProfile[control]
+        PrimaryControl = mapping["Primary"]["Control"]
+        SecondaryControl = mapping["Secondary"]["Control"]        
+        primaryInversion = mapping["Primary"]["Inverted"]
+        secondaryInversion = mapping["Secondary"]["Inverted"]
+        if control:
+            secondaryValue = self.getControlValue(joystick, SecondaryControl, secondaryInversion)
+            primaryValue = self.getControlValue(joystick, PrimaryControl, primaryInversion)        
+        resultValue = primaryValue - secondaryValue
+        return resultValue
+    
+    def getJoystickControl(self): 
+             
+        if not pygame.get_init():
+            pygame.init()
+            pygame.joystick.init()
+        
+        pygame.event.pump()
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         return
+        controlProfile = self.controlsDialog.controlProfile
+        primaryJoystickName = controlProfile["Primary Device"]
+        secondaryJoystickName = controlProfile["Secondary Device"]
+        if primaryJoystickName == "Keyboard":
+            print("Keyboard input is not supported for now")
+            return
+        if secondaryJoystickName == "Keyboard":
+            print("Keyboard (Secondary) input is not supported for now")
+        if self.primaryIdx == -1:
+            self.primaryIdx = self.getJoystickIndex(primaryJoystickName)
+        if self.secondaryIdx == -1:
+            self.secondaryIdx = self.getJoystickIndex(secondaryJoystickName)
+        
+        self.firstTime = time.time()  
+        if self.primaryIdx == -1:
+            print("Primary joystick not found")
+            return
+        else:
+            if self.primaryJoystick:
+                if not (self.primaryJoystick.get_name == primaryJoystickName):
+                    self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
+            else:
+                self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
+        if self.secondaryIdx == -1:
+            print("Secondary joystick not found")
+        else:
+            if self.secondaryJoystick:
+                if not (self.secondaryJoystick.get_name == secondaryJoystickName):
+                    self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
+            else: 
+                self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
+        self.secondTime = time.time()
+        if not self.primaryJoystick.get_init():
+            self.primaryJoystick.init()
+        if not self.secondaryJoystick.get_init():
+            self.secondaryJoystick.init()
+        
+        # Forward thrust
+        self.cForwardThrust = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Forward", "Move forward", "Move backwards")
+        # Strafe thrust
+        self.cStrafeThrust = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Strafe", "Move right", "Move left")
+        # Vertical thrust
+        self.cVerticalThrust = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Vertical", "Move up", "Move down")
+        # Yaw thrust
+        self.cYawThrust = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Yaw", "Rotate right", "Rotate left")
+        # Roll thrust (increment)
+        self.cRollInc = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Roll", "Roll increment", "Roll decrement")
+        # Pitch thrust (increment)
+        self.cPitchInc = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Pitch", "Pitch increment", "Pitch decrement")
+        # Camera rotate
+        self.cCamRotate = self.buttonsControl2(self.primaryJoystick, self.secondaryJoystick,
+                                            "Camera rotate up", "Camera rotate down")
+        # Manipulator rotate
+        if ((primaryJoystickName == secondaryJoystickName) 
+            and ((primaryJoystickName.lower().find("xbox") >= 0) 
+            or (primaryJoystickName.lower().find("dualsense") >= 0) 
+            or (primaryJoystickName.lower().find("dualshock") >= 0))
+            and controlProfile["Manipulator rotate"]["Primary"]["Control"]
+            and controlProfile["Manipulator rotate"]["Secondary"]["Control"]):
+            self.cManRotate = self.triggersControlToOneVal(self.primaryJoystick, "Manipulator rotate")
+        else:
+            self.cManRotate = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Manipulator rotate", "Manipulator rotate right", "Manipulator rotate left")
+        # Manipulator grip
+        if ((primaryJoystickName == secondaryJoystickName) 
+            and ((primaryJoystickName.lower().find("xbox") >= 0) 
+            or (primaryJoystickName.lower().find("dualsense") >= 0) 
+            or (primaryJoystickName.lower().find("dualshock") >= 0))
+            and controlProfile["Manipulator grip"]["Primary"]["Control"]
+            and controlProfile["Manipulator grip"]["Secondary"]["Control"]):
+            self.cManGrip = self.triggersControlToOneVal(self.primaryJoystick, "Manipulator grip")
+        else:
+            self.cManGrip = self.control3(self.primaryJoystick, self.secondaryJoystick,
+                                            "Manipulator grip", "Manipulator grip close", "Manipulator grip open")
+        # Lights toggle        
+        if self.getControlValue(self.secondaryJoystick,controlProfile["Lights"]["Secondary"]["Control"]) or self.getControlValue(self.primaryJoystick,controlProfile["Lights"]["Primary"]["Control"]):
+            if not self.lightsChangeFlag:
+                self.cflagLights = not self.cflagLights
+                self.lightsChangeFlag = True
+        else:
+            self.lightsChangeFlag = False
+        # Reset positiom
+        self.cflagResetStab = self.getControlValue(self.primaryJoystick, controlProfile["Reset position"]["Secondary"]["Control"]) or self.getControlValue(self.secondaryJoystick, controlProfile["Reset position"]["Primary"]["Control"])
+        # Master        
+        if self.getControlValue(self.secondaryJoystick, controlProfile["Master"]["Secondary"]["Control"]) or self.getControlValue(self.primaryJoystick, controlProfile["Master"]["Primary"]["Control"]):
+            if not self.masterChangeFlag:
+                self.cflagMaster = not self.cflagMaster
+                self.masterChangeFlag = True
+        else:
+            self.masterChangeFlag = False
+
+    def getControlValue(self, Joystick, Control, Inversion = False):        
+        Value = 0
+        if not Control:
+            return 0
+        ControlType, ControlIdx = Control.split(" ", 1)
+        ControlIdx = int(ControlIdx)
+        #pygame.event.pump()
+        if ControlType == "Axis":
+            Value = Joystick.get_axis(ControlIdx)
+        if ControlType == "Button":
+            Value = Joystick.get_button(ControlIdx)
+        if ControlType == "Dpad":
+            DpadValues = ControlIdx.split(";")
+            DpadValues[0] = int(DpadValues[0])
+            DpadValues[1] = int(DpadValues[1])
+            Value = 1 if Joystick.get_hat(0) == DpadValues else 0
+        if Inversion: 
+            Value *= -1
+        return Value                 
+
     def gatherControl(self):
+        
+        self.getJoystickControl()
+        
+        #print(self.secondTime-self.firstTime)
+        self.updateMasterStatus()
         self.cflagResetIMU = self.settingsDialog.resetIMU
         self.cflagUpdatePID = self.settingsDialog.updatePID
-        self.cRollPid = [self.settings["PID"]["Roll"]["kP"],
-                         self.settings["PID"]["Roll"]["kI"],
-                         self.settings["PID"]["Roll"]["kD"]]
-        self.cPitchPid = [self.settings["PID"]["Pitch"]["kP"],
-                          self.settings["PID"]["Pitch"]["kI"],
-                          self.settings["PID"]["Pitch"]["kD"]]
-        self.cYawPid = [self.settings["PID"]["Yaw"]["kP"],
-                        self.settings["PID"]["Yaw"]["kI"],
-                        self.settings["PID"]["Yaw"]["kD"]]
-        self.cDepthPid = [self.settings["PID"]["Depth"]["kP"],
-                          self.settings["PID"]["Depth"]["kI"],
-                          self.settings["PID"]["Depth"]["kD"]]
+        self.cRollPid = [self.settingsDialog.settings["PID"]["Roll"]["kP"],
+                         self.settingsDialog.settings["PID"]["Roll"]["kI"],
+                         self.settingsDialog.settings["PID"]["Roll"]["kD"]]
+        self.cPitchPid = [self.settingsDialog.settings["PID"]["Pitch"]["kP"],
+                          self.settingsDialog.settings["PID"]["Pitch"]["kI"],
+                          self.settingsDialog.settings["PID"]["Pitch"]["kD"]]
+        self.cYawPid = [self.settingsDialog.settings["PID"]["Yaw"]["kP"],
+                        self.settingsDialog.settings["PID"]["Yaw"]["kI"],
+                        self.settingsDialog.settings["PID"]["Yaw"]["kD"]]
+        self.cDepthPid = [self.settingsDialog.settings["PID"]["Depth"]["kP"],
+                          self.settingsDialog.settings["PID"]["Depth"]["kI"],
+                          self.settingsDialog.settings["PID"]["Depth"]["kD"]]
         self.stabEnable = self.ui.stabOn.isChecked()
         if self.stabEnable:
             self.cflagRollStab  = self.ui.rollStabOn.isChecked()
@@ -161,8 +423,28 @@ class MainWindow(QMainWindow):
             self.cflagPitchStab = False
             self.cflagYawStab   = False
             self.cflagDepthStab = False
+        self.cPowerTarget = self.ui.powerTargetVal.value()
+
+    def onMasterSwitchClick(self):
+        self.cflagMaster = not self.cflagMaster
+        self.updateMasterStatus()
+
+    def updateMasterStatus(self):
+        if self.cflagMaster:
+            self.ui.masterStatus.setText("ARMED")
+            self.ui.masterStatus.setStyleSheet("color:red;")
+        else:
+            self.ui.masterStatus.setText("SAFE")
+            self.ui.masterStatus.setStyleSheet("color:green;")
 
     def sendControl(self):
+        currentTime = time.time()
+        if abs(currentTime - self.udp_thread.udpServer.lastTelemetryTime) > 2:
+            self.connected = False
+           # self.controlTimer.stop()
+        else:
+            self.connected = True
+        self.updateOnlineStatus()
         if not self.connected:
             return
         # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
@@ -202,8 +484,12 @@ class MainWindow(QMainWindow):
                                     self.cDepthPid[0],
                                     self.cDepthPid[1],
                                     self.cDepthPid[2],)
-
-        self.udp_thread.transport.sendto(controlPacket, (self.remoteIP, self.remotePort))
+        print(*["%.2f" % elem for elem in struct.unpack_from("=Qffffffffffffffffffffff",controlPacket)], sep ='; ')
+        try:
+            self.udp_thread.transport.sendto(controlPacket, (self.remoteIP, self.remotePort))
+        except Exception as ex:
+            print(ex)
+            self.close()
         self.telemetryUpdate()
 
         if self.cflagResetIMU:
@@ -219,7 +505,15 @@ class MainWindow(QMainWindow):
 
         if self.cflagResetStab:
             self.cflagResetStab = False
-            print("All stabibilizations and setpoints has been reset") 
+            #print("All stabibilizations and setpoints has been reset") 
+        
+    def updateOnlineStatus(self):
+        if self.connected:
+            self.ui.onlineStatus.setText("ONLINE")
+            self.ui.onlineStatus.setStyleSheet("color:green;")
+        else:
+            self.ui.onlineStatus.setText("OFFLINE")
+            self.ui.onlineStatus.setStyleSheet("color:red;")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

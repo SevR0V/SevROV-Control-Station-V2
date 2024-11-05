@@ -1,9 +1,9 @@
 from CustomLineEdit import CustomLineEdit
 from UI.controls_window import Ui_controlsDialog
 import json, os, pygame
-from PySide6.QtCore import QTimer, Signal, QThread
-from PySide6.QtWidgets import QDialog, QLineEdit, QComboBox
-from joystickInputDetector import JoystickInputDetecto
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QDialog, QLineEdit, QComboBox, QFileDialog
+from joystickInputDetector import JoystickInputDetector
 
 defaultControls = {
     "Primary Device": "Keyboard", "Secondary Device": "Keyboard",
@@ -40,42 +40,10 @@ defaultControls = {
 }
 
 class ControlsDialog(QDialog):
-    def __init__(self, pyg: pygame, joystick: pygame.joystick):
+    def __init__(self):
         super(ControlsDialog, self).__init__()
         self.ui = Ui_controlsDialog()
         self.ui.setupUi(self)
-        self.pyg = pyg
-        self.joystick = joystick
-        self.ignoreChanges = False
-
-        # If custom actions is needed
-        action_map = {}
-        # Action mapping examle
-        # action_map = {
-        #     "primaryForward": {
-        #         "left":self.prim_forward_Lbutton_click,
-        #         "right":self.prim_forward_Lbutton_click,
-        #                         },
-        #     "primaryMaster": {
-        #         "left": self.prim_master_Lbutton_click,
-        #         "right": self.prim_master_Lbutton_click,
-        #                       }
-        #     }
-        self.custom_line_edits = []
-        self.inputDevices = []
-        self.replace_widgets(self,action_map)
-        self.countdownTimer = QTimer()
-        self.countdownTimer.timeout.connect(self.onCountdownTimer)
-        self.progressValue = 0
-        self.controlProfile = {}
-        self.getInputDevices()
-        self.load_control_profile("default.json")        
-        self.ui.primaryDeviceList.currentIndexChanged.connect(self.primaryDeviceSelected)
-        self.ui.secondaryDeviceList.currentIndexChanged.connect(self.secondaryDeviceSelected)
-
-        self.joystick_thread = None
-
-        self.currentInput = ["",""]
 
         self.controlsToInversionsMap = {
             "Forward":           {"Primary": self.ui.primaryForwardInv,   "Secondary": self.ui.secondaryForwardInv},   "Strafe":              {"Primary": self.ui.primaryStrafeInv,  "Secondary": self.ui.secondaryStrafeInv},
@@ -117,10 +85,45 @@ class ControlsDialog(QDialog):
             "Reset position":            {"Primary": "primaryPosReset",      "Secondary": "secondaryPosReset"},
             "Master":                    {"Primary": "primaryMaster",        "Secondary": "secondaryMaster"}
             }
+
+        pygame.init
+        pygame.joystick.init
+        self.ignoreChanges = False
+
+        # If custom actions is needed
+        action_map = {}
+        # Action mapping examle
+        # action_map = {
+        #     "primaryForward": {
+        #         "left":self.prim_forward_Lbutton_click,
+        #         "right":self.prim_forward_Lbutton_click,
+        #                         },
+        #     "primaryMaster": {
+        #         "left": self.prim_master_Lbutton_click,
+        #         "right": self.prim_master_Lbutton_click,
+        #                       }
+        #     }
+        self.custom_line_edits = []
+        self.inputDevices = []
+        self.replace_widgets(self,action_map)
+        self.countdownTimer = QTimer()
+        self.countdownTimer.timeout.connect(self.onCountdownTimer)
+        self.progressValue = 0
+        self.controlProfile = {}
+        self.getInputDevices()
+        self.load_control_profile("default.json")        
+        self.ui.primaryDeviceList.currentIndexChanged.connect(self.primaryDeviceSelected)
+        self.ui.secondaryDeviceList.currentIndexChanged.connect(self.secondaryDeviceSelected)
+
+        self.joystick_thread = None
+        self.currentInput = ["",""]
         
         for control, value in self.controlsToInversionsMap.items():
             value["Primary"].stateChanged.connect(self.setinversionOnCheckBox)
             value["Secondary"].stateChanged.connect(self.setinversionOnCheckBox)
+        
+        self.ui.saveProfileBut.clicked.connect(self.onSaveButton)
+        self.ui.loadProfileMan.clicked.connect(self.onLoadButton)
 
     def primaryDeviceSelected(self, index):
         if self.ignoreChanges:
@@ -140,15 +143,22 @@ class ControlsDialog(QDialog):
         print("Secondary device selected: " + self.controlProfile["Secondary Device"])
     
     def getInputDevices(self):
-        for i in range(self.joystick.get_count()):
-            joystick = self.joystick.Joystick(i)
+        if not pygame.get_init():
+            pygame.init()
+            pygame.joystick.init()
+        for i in range(pygame.joystick.get_count()):
+            joystick = pygame.joystick.Joystick(i)
             joystick.init()
             self.inputDevices.append(joystick.get_name())
+            joystick.quit()
         self.inputDevices.append("Keyboard")
 
     def closeEvent(self, event):
         self.accept()
         self.setWindowTitle("Controls")
+        pygame.quit()
+        if self.joystick_thread:
+            self.joystick_thread.stop()
         event.accept()
     
     def getQComboBoxItems(self, comboBox: QComboBox):
@@ -179,7 +189,6 @@ class ControlsDialog(QDialog):
                     self.ui.secondaryDeviceList.addItem(value)
                 self.ui.secondaryDeviceList.setCurrentText(value)
                 continue
-            print(self.controlProfile)
             self.get_line_edit(self.controlsToEditsMap[control]["Primary"]).setText(value["Primary"]["Control"])
             self.get_line_edit(self.controlsToEditsMap[control]["Secondary"]).setText(value["Secondary"]["Control"])
             if control in self.controlsToInversionsMap:
@@ -197,11 +206,19 @@ class ControlsDialog(QDialog):
         if os.path.exists(filename):
             with open(filename, "r") as f:
                 controlProfile = json.load(f)
+            profileName = os.path.splitext(os.path.basename(filename))[0]
+            self.ui.profileNameVal.setText(profileName)
         else:
-            # Save default profile
             with open(filename, "w") as f:
                 json.dump(controlProfile, f)
+            self.ui.profileNameVal.setText("default")
         self.controlProfile = controlProfile
+        self.updateControlsMapWindow()
+
+    def onLoadButton(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Открыть файл", "", "JSON файлы (*.json)")
+        if file_path:
+            self.load_control_profile(file_path)
 
     def onCountdownTimer(self):
         self.progressValue -= 1 if self.progressValue > 0 else 0
@@ -250,7 +267,11 @@ class ControlsDialog(QDialog):
             device = self.controlProfile["Secondary Device"]
 
         self.currentInput = [control, type]
-        self.joystick_thread = JoystickInputDetecto(self.pyg, self.joystick, device)
+        if self.joystick_thread:
+            if self.joystick_thread.isFinished():
+                self.joystick_thread = JoystickInputDetector(device)
+        else:
+            self.joystick_thread = JoystickInputDetector(device)
         if control in self.controlsToInversionsMap:
             self.joystick_thread.axis_moved.connect(self.onGamepadAxesDetected)
         else:
@@ -260,9 +281,16 @@ class ControlsDialog(QDialog):
             if device == "Keyboard":
                 self.joystick_thread.keyboard_press.connect(self.onKeyboardKeyDetected)
 
+
         self.joystick_thread.start()
         #self.setCustomLineEditText(self.controlsToEditsMap[control][type],type + control)
 
+    def onSaveButton(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл", self.ui.profileNameVal.text() + ".json" , "JSON файлы (*.json)")
+        if file_path:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                json.dump(self.controlProfile, file, ensure_ascii=False, indent=4)
+            
     def onGamePadDpad(self, x, y):
         if not x and not y:
             return
@@ -274,7 +302,6 @@ class ControlsDialog(QDialog):
         self.joystick_thread.stop()
         self.controlProfile[control][type]["Control"] = "Dpad " + str(x)+";"+str(y)
         dpadName = ""
-        self.joystick_thread.stop()
         if (x, y) == (0, 1):
             dpadName = ("D-Pad Up")
         elif (x, y) == (0, -1):
@@ -292,8 +319,7 @@ class ControlsDialog(QDialog):
         type = self.currentInput[1]
         if not control or not type:
             return
-        self.currentInput = ["",""]        
-        self.joystick_thread.stop()
+        self.currentInput = ["",""]
         self.controlProfile[control][type]["Control"] = key
         self.joystick_thread.stop()
         self.stopCountdown("Control - Input " + key + " is set for " + type + " " + control)
@@ -305,8 +331,7 @@ class ControlsDialog(QDialog):
         type = self.currentInput[1]
         if not control or not type:
             return
-        self.currentInput = ["",""]        
-        self.joystick_thread.stop()
+        self.currentInput = ["",""]
         self.controlProfile[control][type]["Control"] = "Button " + str(button)
         self.joystick_thread.stop()
         self.stopCountdown("Control - Input Button " + str(button) + " is set for " + type + " " + control)
@@ -353,6 +378,10 @@ class ControlsDialog(QDialog):
         line_edit = self.get_line_edit(name)
         if line_edit:
             return line_edit.text()
+        
+    def showEvent(self, event):                        
+        self.updateControlsMapWindow()
+        super().showEvent(event)
 
     def replace_widget_with_custom(self, layout, base_class, action_map):
         """Рекурсивно заменяет виджеты типа `base_class` на `CustomLineEdit` в заданном `layout`."""

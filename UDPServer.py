@@ -1,6 +1,7 @@
 import numpy as np
 import asyncio
 import struct
+import time
 
 class UDPServer(asyncio.DatagramProtocol):
     def __init__(self):
@@ -15,6 +16,7 @@ class UDPServer(asyncio.DatagramProtocol):
         self.tAmps = 0.0
         self.tRollSP = 0.0
         self.tPitchSP = 0.0
+        self.lastTelemetryTime = 0
 
     def connection_made(self, transport):
         self.transport = transport
@@ -31,8 +33,9 @@ class UDPServer(asyncio.DatagramProtocol):
         self.tVolts = received[5]
         self.tCharge = received[6]
         self.tAmps = received[7]
-        self.tRollSP = received[8]
-        self.tPitchSP = received[9]
+        self.tRollSP = float(received[8])
+        self.tPitchSP = float(received[9])
+        self.lastTelemetryTime = time.time()
 
 
     def error_received(self, exc):
