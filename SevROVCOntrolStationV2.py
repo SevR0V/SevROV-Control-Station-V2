@@ -36,14 +36,18 @@ class MainWindow(QMainWindow):
         pygame.init()
         pygame.joystick.init()
         self.primaryJoystick = None
-        self.secondaryJoystick = None
-
-        self.controlsDialog = ControlsDialog(self)
-        self.settingsDialog = SettingsDialog() 
-
-        self.stabEnable = False
+        self.secondaryJoystick = None                
+        
+        self.settingsDialog = SettingsDialog()
+        self.settingsDialog.load_settings()
         self.remoteIP = ""
         self.remotePort = 0
+        self.updateSettings()
+        self.controlsDialog = ControlsDialog(self)    
+        self.controlsDialog.profileName = self.settingsDialog.settings["Control Profile"]    
+        self.controlsDialog.load_control_profile(self.controlsDialog.profileName)        
+
+        self.stabEnable = False        
         self.connected = False
         self.connectionTimeout = 0
         self.maxTimeout = 1000/TIMER_PERIOD_MS
@@ -89,9 +93,7 @@ class MainWindow(QMainWindow):
         self.udp_thread = AsyncioThread(self.remoteIP, self.remotePort)
         self.udp_thread.start()
         
-        self.setup_connections() 
-        self.settingsDialog.load_settings()
-        self.updateSettings()
+        self.setup_connections()
 
         self.controlTimer = QTimer()
         self.controlTimer.timeout.connect(self.sendControl)   
@@ -383,7 +385,8 @@ class MainWindow(QMainWindow):
         if not Control:
             return 0
         ControlType, ControlIdx = Control.split(" ", 1)
-        ControlIdx = int(ControlIdx)
+        if not ControlType == "Dpad":
+            ControlIdx = int(ControlIdx)
         #pygame.event.pump()
         if ControlType == "Axis":
             if ControlIdx < Joystick.get_numaxes():
@@ -395,7 +398,8 @@ class MainWindow(QMainWindow):
             DpadValues = ControlIdx.split(";")
             DpadValues[0] = int(DpadValues[0])
             DpadValues[1] = int(DpadValues[1])
-            Value = 1 if Joystick.get_hat(0) == DpadValues else 0
+            hatValues = Joystick.get_hat(0)
+            Value = 1 if (hatValues[0] == DpadValues[0]) and (hatValues[1] == DpadValues[1]) else 0
         if Inversion: 
             Value *= -1
         return Value                 

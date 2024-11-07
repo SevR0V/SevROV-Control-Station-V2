@@ -14,7 +14,7 @@
     "Strafe": {
         "Primary": {
             "Control": "Axis 0",
-            "Inverted": true
+            "Inverted": false
         },
         "Secondary": {
             "Control": "",

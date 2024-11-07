@@ -45,12 +45,16 @@ class ControlsDialog(QDialog):
         super(ControlsDialog, self).__init__()
         self.ui = Ui_controlsDialog()
         self.ui.setupUi(self)
-
+        self.profileName = "default.json"
         self.controlsToInversionsMap = {
-            "Forward":           {"Primary": self.ui.primaryForwardInv,   "Secondary": self.ui.secondaryForwardInv},   "Strafe":              {"Primary": self.ui.primaryStrafeInv,  "Secondary": self.ui.secondaryStrafeInv},
-            "Vertical":          {"Primary": self.ui.primaryVerticalInv,  "Secondary": self.ui.secondaryVerticalInv},  "Yaw":                 {"Primary": self.ui.primaryYawInv,     "Secondary": self.ui.secondaryYawInv},
-            "Roll":              {"Primary": self.ui.primaryRollInv,      "Secondary": self.ui.secondaryRollInv},      "Pitch":               {"Primary": self.ui.primaryPitchInv,   "Secondary": self.ui.secondaryPitchInv},
-            "Camera angle":      {"Primary": self.ui.primaryCamAngleInv,  "Secondary": self.ui.secondaryCamAngleInv},  "Manipulator rotate":  {"Primary": self.ui.primaryManRotInv,  "Secondary": self.ui.secondaryManRotInv},
+            "Forward":           {"Primary": self.ui.primaryForwardInv,   "Secondary": self.ui.secondaryForwardInv},   
+            "Strafe":            {"Primary": self.ui.primaryStrafeInv,  "Secondary": self.ui.secondaryStrafeInv},
+            "Vertical":          {"Primary": self.ui.primaryVerticalInv,  "Secondary": self.ui.secondaryVerticalInv},  
+            "Yaw":               {"Primary": self.ui.primaryYawInv,     "Secondary": self.ui.secondaryYawInv},
+            "Roll":              {"Primary": self.ui.primaryRollInv,      "Secondary": self.ui.secondaryRollInv},      
+            "Pitch":             {"Primary": self.ui.primaryPitchInv,   "Secondary": self.ui.secondaryPitchInv},
+            "Camera angle":      {"Primary": self.ui.primaryCamAngleInv,  "Secondary": self.ui.secondaryCamAngleInv},  
+            "Manipulator rotate":{"Primary": self.ui.primaryManRotInv,  "Secondary": self.ui.secondaryManRotInv},
             "Manipulator grip":  {"Primary": self.ui.primaryManGripInv,   "Secondary": self.ui.secondaryManGripInv}
             }
 
@@ -111,8 +115,7 @@ class ControlsDialog(QDialog):
         self.countdownTimer.timeout.connect(self.onCountdownTimer)
         self.progressValue = 0
         self.controlProfile = {}
-        self.getInputDevices()
-        self.load_control_profile("default.json")        
+        self.getInputDevices()     
         self.ui.primaryDeviceList.currentIndexChanged.connect(self.primaryDeviceSelected)
         self.ui.secondaryDeviceList.currentIndexChanged.connect(self.secondaryDeviceSelected)
 
@@ -140,6 +143,8 @@ class ControlsDialog(QDialog):
         self.updateDevicesInParent()
         
     def setinversionOnCheckBox(self):
+        if self.ignoreChanges:
+            return
         for control, value in self.controlsToInversionsMap.items():
             self.controlProfile[control]["Primary"]["Inverted"] = value["Primary"].isChecked()
             self.controlProfile[control]["Secondary"]["Inverted"] = value["Secondary"].isChecked()
@@ -185,6 +190,18 @@ class ControlsDialog(QDialog):
             if not device in secItems:
                 self.ui.secondaryDeviceList.addItem(device)
 
+    def updateChecks(self):
+        for control, value in self.controlsToInversionsMap.items():
+            value["Primary"].setChecked(self.controlProfile[control]["Primary"]["Inverted"])
+            value["Secondary"].setChecked(self.controlProfile[control]["Secondary"]["Inverted"])
+
+    def verifyChecks(self):
+        for control, value in self.controlsToInversionsMap.items():
+            if not value["Primary"].checkState() == self.controlProfile[control]["Primary"]["Inverted"]:
+                value["Primary"].setChecked(self.controlProfile[control]["Primary"]["Inverted"])
+            if not value["Secondary"].checkState() == self.controlProfile[control]["Secondary"]["Inverted"]:
+                value["Secondary"].setChecked(self.controlProfile[control]["Secondary"]["Inverted"])
+
     def updateControlsMapWindow(self):
         self.ignoreChanges = True
         self.safeDeviceListAdd()
@@ -204,9 +221,8 @@ class ControlsDialog(QDialog):
             if control in self.controlsToInversionsMap:
                 self.controlsToInversionsMap[control]["Primary"].setChecked(value["Primary"]["Inverted"])
                 self.controlsToInversionsMap[control]["Secondary"].setChecked(value["Secondary"]["Inverted"])
-        for control, value in self.controlsToInversionsMap.items():
-            value["Primary"].setChecked(self.controlProfile[control]["Primary"]["Inverted"])
-            value["Secondary"].setChecked(self.controlProfile[control]["Secondary"]["Inverted"])
+        self.updateChecks()
+        self.verifyChecks()
         self.ignoreChanges = False
         self.updateDevicesInParent()
 
@@ -222,6 +238,9 @@ class ControlsDialog(QDialog):
                 controlProfile = json.load(f)
             profileName = os.path.splitext(os.path.basename(filename))[0]
             self.ui.profileNameVal.setText(profileName)
+            self.parentApp.settingsDialog.settings["Control Profile"] = profileName + ".json"
+            self.parentApp.settingsDialog.save_settings()
+            self.parentApp.updateSettings()
         else:
             with open(filename, "w") as f:
                 json.dump(controlProfile, f)

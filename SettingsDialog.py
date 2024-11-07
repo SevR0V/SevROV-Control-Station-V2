@@ -10,7 +10,8 @@ defaultSettings = {
                     "Pitch": {"kP": 0.0, "kI": 0.0, "kD": 0.0},
                     "Yaw": {"kP": 0.0, "kI": 0.0, "kD": 0.0},
                     "Depth": {"kP": 0.0, "kI": 0.0, "kD": 0.0}
-                }
+                },
+                "Control Profile": "default.json"
             }
 
 class SettingsDialog(QDialog):
@@ -93,5 +94,6 @@ class SettingsDialog(QDialog):
                     "kP": self.ui.depthKPval.value(),
                     "kI": self.ui.depthKIval.value(),
                     "kD": self.ui.depthKDval.value()}
-                }
+                },
+                "Control Profile": self.settings["Control Profile"]
             }
