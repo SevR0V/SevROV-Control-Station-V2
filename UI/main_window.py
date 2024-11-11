@@ -420,6 +420,11 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_9.addItem(self.verticalSpacer_2)
 
+        self.manipulatorButton = QPushButton(self.centralwidget)
+        self.manipulatorButton.setObjectName(u"manipulatorButton")
+
+        self.verticalLayout_9.addWidget(self.manipulatorButton)
+
         self.controlsBut = QPushButton(self.centralwidget)
         self.controlsBut.setObjectName(u"controlsBut")
 
@@ -471,6 +476,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Battery Charge:", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Battery Voltage:", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Battery Current:", None))
+        self.manipulatorButton.setText(QCoreApplication.translate("MainWindow", u"Manipulator", None))
         self.controlsBut.setText(QCoreApplication.translate("MainWindow", u"Controls", None))
         self.settingsBut.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
     # retranslateUi

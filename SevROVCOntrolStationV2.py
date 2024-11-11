@@ -5,6 +5,7 @@ from AsyncioThread import AsyncioThread
 from SettingsDialog import SettingsDialog
 from ControlsDialog import ControlsDialog
 from UI.main_window import Ui_MainWindow
+from ManipulatorControlWindow import ManipulatorControlWindow
 import numpy as np
 # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
 # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
@@ -36,16 +37,18 @@ class MainWindow(QMainWindow):
         pygame.init()
         pygame.joystick.init()
         self.primaryJoystick = None
-        self.secondaryJoystick = None                
+        self.secondaryJoystick = None            
         
         self.settingsDialog = SettingsDialog()
         self.settingsDialog.load_settings()
         self.remoteIP = ""
         self.remotePort = 0
-        self.updateSettings()
+        self.update_settings()
         self.controlsDialog = ControlsDialog(self)    
         self.controlsDialog.profileName = self.settingsDialog.settings["Control Profile"]    
-        self.controlsDialog.load_control_profile(self.controlsDialog.profileName)        
+        self.controlsDialog.load_control_profile(self.controlsDialog.profileName)
+
+        self.manipulatroControlWindow = ManipulatorControlWindow()
 
         self.stabEnable = False        
         self.connected = False
@@ -106,9 +109,9 @@ class MainWindow(QMainWindow):
         self.secondTime = 0
 
     def onSettingsClose(self):
-        self.updateSettings()
+        self.update_settings()
         
-    def updateSettings(self):        
+    def update_settings(self):        
         self.remoteIP = self.settingsDialog.settings["IP address"]
         self.remotePort = self.settingsDialog.settings["Port"]
     
@@ -131,6 +134,10 @@ class MainWindow(QMainWindow):
         self.controlsDialog.finished.connect(self.onControlsFinished)
         self.ui.masterButton.clicked.connect(self.onMasterSwitchClick)
         self.ui.positionResetBut.clicked.connect(self.resetPositionButtonClick)
+        self.ui.manipulatorButton.clicked.connect(self.manipulatorNuttonClick)
+
+    def manipulatorNuttonClick(self):
+        self.manipulatroControlWindow.show()
     
     def onControlsFinished(self):
         self.primaryIdx = -1

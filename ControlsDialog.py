@@ -240,7 +240,7 @@ class ControlsDialog(QDialog):
             self.ui.profileNameVal.setText(profileName)
             self.parentApp.settingsDialog.settings["Control Profile"] = profileName + ".json"
             self.parentApp.settingsDialog.save_settings()
-            self.parentApp.updateSettings()
+            self.parentApp.update_settings()
         else:
             with open(filename, "w") as f:
                 json.dump(controlProfile, f)

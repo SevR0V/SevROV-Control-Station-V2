@@ -777,6 +777,13 @@
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="manipulatorButton">
+            <property name="text">
+             <string>Manipulator</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="controlsBut">
             <property name="text">
              <string>Controls</string>
