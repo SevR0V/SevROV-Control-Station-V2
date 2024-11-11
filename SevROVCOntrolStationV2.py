@@ -285,9 +285,6 @@ class MainWindow(QMainWindow):
             pygame.joystick.init()
         
         pygame.event.pump()
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         return
         controlProfile = self.controlsDialog.controlProfile
         primaryJoystickName = controlProfile["Primary Device"]
         secondaryJoystickName = controlProfile["Secondary Device"]
