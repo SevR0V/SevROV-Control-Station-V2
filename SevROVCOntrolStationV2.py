@@ -306,7 +306,7 @@ class MainWindow(QMainWindow):
             return
         else:
             if self.primaryJoystick:
-                if not (self.primaryJoystick.get_name == primaryJoystickName):
+                if not (self.primaryJoystick.get_name() == primaryJoystickName):
                     self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
             else:
                 self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
             print("Secondary joystick not found")
         else:
             if self.secondaryJoystick:
-                if not (self.secondaryJoystick.get_name == secondaryJoystickName):
+                if not (self.secondaryJoystick.get_name() == secondaryJoystickName):
                     self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
             else: 
                 self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
@@ -338,10 +338,10 @@ class MainWindow(QMainWindow):
                                             "Yaw", "Rotate right", "Rotate left")
         # Roll thrust (increment)
         self.cRollInc = self.control3(self.primaryJoystick, self.secondaryJoystick,
-                                            "Roll", "Roll increment", "Roll decrement")
+                                            "Roll", "Roll increment", "Roll decrement") * 3
         # Pitch thrust (increment)
         self.cPitchInc = self.control3(self.primaryJoystick, self.secondaryJoystick,
-                                            "Pitch", "Pitch increment", "Pitch decrement")
+                                            "Pitch", "Pitch increment", "Pitch decrement") * 3
         # Camera rotate
         self.cCamRotate = self.control3(self.primaryJoystick, self.secondaryJoystick,
                                             "Camera angle","Camera rotate up", "Camera rotate down")

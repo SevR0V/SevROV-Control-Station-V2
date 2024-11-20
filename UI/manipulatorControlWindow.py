@@ -37,12 +37,12 @@ class Ui_Form(object):
 
         self.verticalLayout_6.addWidget(self.label_4)
 
-        self.label_5 = QLabel(Form)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setMinimumSize(QSize(150, 0))
-        self.label_5.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.manStatusLabel = QLabel(Form)
+        self.manStatusLabel.setObjectName(u"manStatusLabel")
+        self.manStatusLabel.setMinimumSize(QSize(150, 0))
+        self.manStatusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout_6.addWidget(self.label_5)
+        self.verticalLayout_6.addWidget(self.manStatusLabel)
 
 
         self.verticalLayout_7.addLayout(self.verticalLayout_6)
@@ -331,7 +331,7 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Manipulator", None))
         self.label_4.setText(QCoreApplication.translate("Form", u"Manipulator status:", None))
-        self.label_5.setText(QCoreApplication.translate("Form", u"OFFLINE", None))
+        self.manStatusLabel.setText(QCoreApplication.translate("Form", u"OFFLINE", None))
         self.manEnableControl.setText(QCoreApplication.translate("Form", u"Enable manual control", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("Form", u"Manipulator Control", None))
         self.groupBox.setTitle(QCoreApplication.translate("Form", u"Axis 1", None))
