@@ -163,6 +163,21 @@ class ManipulatorControlWindow(QWidget):
         self.ui.axis3PhaseBCur.setText(str("%.2f"%self.manPhaseCurrents[2][1]))
         self.ui.axis3Voltage.setText(str("%.2f"%self.manVoltages[2]))
 
+        if not self.manControlEnabled:
+            self.ui.axis1ControlDial.setEnabled(False)
+            self.ui.axis2ControlDial.setEnabled(False)
+            self.ui.axis3ControlDial.setEnabled(False)
+            self.ui.axis1ControlVal.setEnabled(False)
+            self.ui.axis2ControlVal.setEnabled(False)
+            self.ui.axis3ControlVal.setEnabled(False)
+        else:
+            self.ui.axis1ControlDial.setEnabled(True)
+            self.ui.axis2ControlDial.setEnabled(True)
+            self.ui.axis3ControlDial.setEnabled(True)
+            self.ui.axis1ControlVal.setEnabled(True)
+            self.ui.axis2ControlVal.setEnabled(True)
+            self.ui.axis3ControlVal.setEnabled(True)
+
         if self.manTelemetryObtained:
             self.ui.manStatusLabel.setText("ONLINE")
             self.ui.manStatusLabel.setStyleSheet("color:green;")
@@ -178,7 +193,9 @@ class ManipulatorControlWindow(QWidget):
             self.ui.manStatusLabel.setStyleSheet("color:red;")
             self.ui.manEnableControl.setCheckable(False)
             self.ui.manEnableControl.setChecked(False)
+            self.ui.manEnableControl.update()
             self.manControlEnabled = False
+            self.manTelemetryFirstTime = True
 
     def manEnableControl_state_changed(self):
         self.manControlEnabled = self.ui.manEnableControl.isChecked()
