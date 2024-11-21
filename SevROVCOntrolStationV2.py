@@ -5,7 +5,7 @@ from AsyncioThread import AsyncioThread
 from SettingsDialog import SettingsDialog
 from ControlsDialog import ControlsDialog
 from UI.main_window import Ui_MainWindow
-from ManipulatorControlWindow import ManipulatorControlWindow
+from ManipulatorControlWindow import ManipulatorControlWindow, GripState
 import numpy as np
 # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
 # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
@@ -24,6 +24,10 @@ UDP_FLAGS_STAB_DEPTHx = np.uint64(1 << 5)
 UDP_FLAGS_RESET_POSITIONx = np.uint64(1 << 6)
 UDP_FLAGS_RESET_IMUx = np.uint64(1 << 7)
 UDP_FLAGS_UPDATE_PIDx = np.uint64(1 << 8)
+UDP_FLAGS_MANIPULATOR_ANGLE_1_UPDATE = np.uint64(1 << 9)
+UDP_FLAGS_MANIPULATOR_ANGLE_2_UPDATE = np.uint64(1 << 10)
+UDP_FLAGS_MANIPULATOR_ANGLE_3_UPDATE = np.uint64(1 << 11)
+UDP_FLAGS_MANIPULATOR_GRIP_UPDATE = np.uint64(1 << 12)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -48,7 +52,7 @@ class MainWindow(QMainWindow):
         self.controlsDialog.profileName = self.settingsDialog.settings["Control Profile"]    
         self.controlsDialog.load_control_profile(self.controlsDialog.profileName)
 
-        self.manipulatroControlWindow = ManipulatorControlWindow()
+        self.manipulatorControlWindow = ManipulatorControlWindow()
 
         self.stabEnable = False        
         self.connected = False
@@ -80,6 +84,9 @@ class MainWindow(QMainWindow):
         self.cflagDepthStab = False
         self.cflagUpdatePID = False
         self.cflagLights = False
+        self.cManFlags = [False]*4
+        self.cManAngles = [0.0]*3
+        self.cGripState = GripState.UWMANIPULATOR_GRIP_STOP
 
         # ROV telemetry data
         self.tErrorsFlags = np.uint64(0) 
@@ -92,6 +99,10 @@ class MainWindow(QMainWindow):
         self.tAmps = 0.0
         self.tRollSP = 0.0
         self.tPitchSP = 0.0
+        self.tThrusterPhaseCurrent = [[0.0]*3]*6
+
+        self.manTelemetryObtained = False
+        self.manControl = False
         
         self.udp_thread = AsyncioThread(self.remoteIP, self.remotePort)
         self.udp_thread.start()
@@ -125,6 +136,14 @@ class MainWindow(QMainWindow):
         self.ui.currentVal.setText(str("%.2f"%self.udp_thread.udpServer.tAmps))
         self.ui.rollSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tRollSP))
         self.ui.pitchSPVal.setText(str("%.2f"%self.udp_thread.udpServer.tPitchSP))
+        
+        self.manTelemetryObtained = self.udp_thread.udpServer.manTelemetryObtained
+        self.tThrusterPhaseCurrent = self.udp_thread.udpServer.tThrusterPhaseCurrent
+        self.manipulatorControlWindow.manPhaseCurrents = self.udp_thread.udpServer.tManPhaseCurrents
+        self.manipulatorControlWindow.tManAngles = self.udp_thread.udpServer.tManAngles
+        self.manipulatorControlWindow.manVoltages = self.udp_thread.udpServer.tManVoltages
+        self.manipulatorControlWindow.manTelemetryObtained = self.manTelemetryObtained
+        self.manipulatorControlWindow.window_Update()
 
     def setup_connections(self):
         self.ui.settingsBut.clicked.connect(self.settings_button_click)
@@ -136,8 +155,11 @@ class MainWindow(QMainWindow):
         self.ui.positionResetBut.clicked.connect(self.resetPositionButtonClick)
         self.ui.manipulatorButton.clicked.connect(self.manipulatorNuttonClick)
 
+    def onClose(self):
+        self.manipulatorControlWindow.close()
+
     def manipulatorNuttonClick(self):
-        self.manipulatroControlWindow.show()
+        self.manipulatorControlWindow.show()
     
     def onControlsFinished(self):
         self.primaryIdx = -1
@@ -150,7 +172,6 @@ class MainWindow(QMainWindow):
         self.secondaryJoystick.init()
         pygame.event.pump()
         print("Joystick applied")
-
 
     def settings_button_click(self):
         self.settingsDialog.exec()
@@ -276,7 +297,7 @@ class MainWindow(QMainWindow):
             secondaryValue = self.getControlValue(joystick, SecondaryControl, secondaryInversion)
             primaryValue = self.getControlValue(joystick, PrimaryControl, primaryInversion)        
         resultValue = primaryValue - secondaryValue
-        return resultValue
+        return resultValue/2
     
     def getJoystickControl(self): 
              
@@ -306,7 +327,10 @@ class MainWindow(QMainWindow):
             return
         else:
             if self.primaryJoystick:
-                if not (self.primaryJoystick.get_name() == primaryJoystickName):
+                if not self.primaryJoystick.get_init():
+                    self.primaryJoystick.init()
+                curPrimaryJoyName = self.primaryJoystick.get_name()
+                if not (curPrimaryJoyName == primaryJoystickName):
                     self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
             else:
                 self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
@@ -314,6 +338,8 @@ class MainWindow(QMainWindow):
             print("Secondary joystick not found")
         else:
             if self.secondaryJoystick:
+                if not self.secondaryJoystick.get_init():
+                    self.secondaryJoystick.init()
                 if not (self.secondaryJoystick.get_name() == secondaryJoystickName):
                     self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
             else: 
@@ -408,10 +434,8 @@ class MainWindow(QMainWindow):
             Value *= -1
         return Value                 
 
-    def gatherControl(self):
-        
-        self.getJoystickControl()
-        
+    def gatherControl(self):        
+        self.getJoystickControl()        
         #print(self.secondTime-self.firstTime)
         self.updateMasterStatus()
         self.cflagResetIMU = self.settingsDialog.resetIMU
@@ -440,6 +464,10 @@ class MainWindow(QMainWindow):
             self.cflagYawStab   = False
             self.cflagDepthStab = False
         self.cPowerTarget = self.ui.powerTargetVal.value()
+        self.cManFlags = self.manipulatorControlWindow.manFlags
+        self.cManAngles = self.manipulatorControlWindow.manAngles
+        self.cGripState = self.manipulatorControlWindow.gripState
+        self.manControl = self.manipulatorControlWindow.manControlEnabled
 
     def onMasterSwitchClick(self):
         self.cflagMaster = not self.cflagMaster
@@ -475,37 +503,53 @@ class MainWindow(QMainWindow):
         self.cControlFlags = self.cControlFlags | UDP_FLAGS_RESET_POSITIONx if self.cflagResetStab  else self.cControlFlags & ~UDP_FLAGS_RESET_POSITIONx 
         self.cControlFlags = self.cControlFlags | UDP_FLAGS_RESET_IMUx      if self.cflagResetIMU   else self.cControlFlags & ~UDP_FLAGS_RESET_IMUx           
         self.cControlFlags = self.cControlFlags | UDP_FLAGS_UPDATE_PIDx     if self.cflagUpdatePID  else self.cControlFlags & ~UDP_FLAGS_UPDATE_PIDx
-             
-        controlPacket = struct.pack("=Qffffffffffffffffffffff", 
-                                    self.cControlFlags,
-                                    self.cForwardThrust,
-                                    self.cStrafeThrust,
-                                    self.cVerticalThrust,
-                                    self.cYawThrust,
-                                    self.cRollInc,
-                                    self.cPitchInc,
-                                    self.cPowerTarget,
-                                    self.cCamRotate,
-                                    self.cManGrip,
-                                    self.cManRotate,
-                                    self.cRollPid[0],
-                                    self.cRollPid[1],
-                                    self.cRollPid[2],
-                                    self.cPitchPid[0],
-                                    self.cPitchPid[1],
-                                    self.cPitchPid[2],
-                                    self.cYawPid[0],
-                                    self.cYawPid[1],
-                                    self.cYawPid[2],
-                                    self.cDepthPid[0],
-                                    self.cDepthPid[1],
-                                    self.cDepthPid[2],)
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_MANIPULATOR_ANGLE_1_UPDATE if self.cManFlags[0] else self.cControlFlags & ~UDP_FLAGS_MANIPULATOR_ANGLE_1_UPDATE
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_MANIPULATOR_ANGLE_2_UPDATE if self.cManFlags[1] else self.cControlFlags & ~UDP_FLAGS_MANIPULATOR_ANGLE_2_UPDATE
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_MANIPULATOR_ANGLE_3_UPDATE if self.cManFlags[2] else self.cControlFlags & ~UDP_FLAGS_MANIPULATOR_ANGLE_3_UPDATE
+        self.cControlFlags = self.cControlFlags | UDP_FLAGS_MANIPULATOR_GRIP_UPDATE    if self.cManFlags[3] else self.cControlFlags & ~UDP_FLAGS_MANIPULATOR_GRIP_UPDATE   
+        if not self.manControl:
+            controlPacket = struct.pack("=Qffffffffffffffffffffff", 
+                                        self.cControlFlags, self.cForwardThrust,
+                                        self.cStrafeThrust, self.cVerticalThrust,
+                                        self.cYawThrust, self.cRollInc,
+                                        self.cPitchInc, self.cPowerTarget,
+                                        self.cCamRotate, self.cManGrip,
+                                        self.cManRotate,
+                                        self.cRollPid[0], self.cRollPid[1], self.cRollPid[2],
+                                        self.cPitchPid[0], self.cPitchPid[1], self.cPitchPid[2],
+                                        self.cYawPid[0], self.cYawPid[1], self.cYawPid[2],
+                                        self.cDepthPid[0], self.cDepthPid[1], self.cDepthPid[2],)
+        else:
+            # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, 
+            # manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd,
+            # Extended packet:
+            # manipulatorAngle1, manipulatorAngle2, manipulatorAngle3, manipulatorGrip
+            # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID, 
+            # Extended packet:
+            # manipulatorAngleUpdate1, manipulatorAngleUpdate2, manipulatorAngleUpdate3, manipulatorGripUpdate
+            controlPacket = struct.pack("=QfffffffffffffffffffffffffB", 
+                                        self.cControlFlags, self.cForwardThrust,
+                                        self.cStrafeThrust, self.cVerticalThrust,
+                                        self.cYawThrust, self.cRollInc,
+                                        self.cPitchInc, self.cPowerTarget,
+                                        self.cCamRotate, self.cManGrip,
+                                        self.cManRotate,
+                                        self.cRollPid[0], self.cRollPid[1], self.cRollPid[2],
+                                        self.cPitchPid[0], self.cPitchPid[1], self.cPitchPid[2],
+                                        self.cYawPid[0], self.cYawPid[1], self.cYawPid[2],
+                                        self.cDepthPid[0], self.cDepthPid[1], self.cDepthPid[2],
+                                        self.cManAngles[0], self.cManAngles[1], self.cManAngles[2], self.cGripState)
         #print(*["%.2f" % elem for elem in struct.unpack_from("=Qffffffffffffffffffffff",controlPacket)], sep ='; ')
         try:
             self.udp_thread.transport.sendto(controlPacket, (self.remoteIP, self.remotePort))
         except Exception as ex:
             print(ex)
         self.telemetryUpdate()
+
+        for i in range(4):
+            if self.cManFlags[i]:
+                self.cManFlags[i] = False
+                self.manipulatorControlWindow.manFlags[i] = False
 
         if self.cflagResetIMU:
             self.cflagResetIMU = False
@@ -520,7 +564,7 @@ class MainWindow(QMainWindow):
 
         if self.cflagResetStab:
             self.cflagResetStab = False
-            #print("All stabibilizations and setpoints has been reset") 
+            #print("All stabibilizations and setpoints has been reset")
         
     def updateOnlineStatus(self):
         if self.connected:
@@ -529,6 +573,10 @@ class MainWindow(QMainWindow):
         else:
             self.ui.onlineStatus.setText("OFFLINE")
             self.ui.onlineStatus.setStyleSheet("color:red;")
+            self.manTelemetryObtained = False
+            self.udp_thread.udpServer.manTelemetryObtained = False
+            self.manipulatorControlWindow.manTelemetryObtained = False
+            self.manipulatorControlWindow.window_Update()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

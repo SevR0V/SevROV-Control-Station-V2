@@ -297,7 +297,7 @@
             "Inverted": false
         },
         "Secondary": {
-            "Control": "",
+            "Control": "Button 4",
             "Inverted": false
         }
     }
