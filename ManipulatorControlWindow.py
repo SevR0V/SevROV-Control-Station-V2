@@ -18,11 +18,11 @@ class ManipulatorControlWindow(QWidget):
         self.ui.manEnableControl.setCheckable(False)
         
         self.manControlEnabled = False
-        self.manFlags = [False]*4
-        self.manAngles = [0.0]*3
-        self.tManAngles = [0.0]*3
-        self.manPhaseCurrents = [[0.0]*2]*3
-        self.manVoltages = [0.0]*3
+        self.manFlags = [False, False, False, False]
+        self.manAngles = [0.0,0.0,0.0]
+        self.tManAngles = [0.0,0.0,0.0]
+        self.manPhaseCurrents = [[0.0,0.0],[0.0,0.0],[0.0,0.0]]
+        self.manVoltages = [0.0,0.0,0.0]
         self.gripState = GripState.UWMANIPULATOR_GRIP_STOP
         self.manTelemetryObtained = False
         self.manTelemetryFirstTime = True

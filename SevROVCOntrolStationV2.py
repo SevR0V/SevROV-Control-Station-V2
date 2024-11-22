@@ -7,6 +7,7 @@ from ControlsDialog import ControlsDialog
 from UI.main_window import Ui_MainWindow
 from ManipulatorControlWindow import ManipulatorControlWindow, GripState
 import numpy as np
+import time
 # controlFlags, forward, strafe, vertical, rotation, rollInc, pitchInc, powerTarget, cameraRotate, manipulatorGrip, manipulatorRotate, rollKp, rollKi, rollKd, pitchKp, pitchKi, pitchKd, yawKp, yawKi, yawKd, depthKp, depthKi, depthKd
 # flags = MASTER, lightState, stabRoll, stabPitch, stabYaw, stabDepth, resetPosition, resetIMU, updatePID
 
@@ -84,8 +85,8 @@ class MainWindow(QMainWindow):
         self.cflagDepthStab = False
         self.cflagUpdatePID = False
         self.cflagLights = False
-        self.cManFlags = [False]*4
-        self.cManAngles = [0.0]*3
+        self.cManFlags = [False, False, False, False]
+        self.cManAngles = [0.0, 0.0, 0.0]
         self.cGripState = GripState.UWMANIPULATOR_GRIP_STOP
 
         # ROV telemetry data
@@ -155,8 +156,9 @@ class MainWindow(QMainWindow):
         self.ui.positionResetBut.clicked.connect(self.resetPositionButtonClick)
         self.ui.manipulatorButton.clicked.connect(self.manipulatorNuttonClick)
 
-    def onClose(self):
+    def closeEvent(self, event):
         self.manipulatorControlWindow.close()
+        event.accept()
 
     def manipulatorNuttonClick(self):
         self.manipulatorControlWindow.show()
@@ -166,6 +168,9 @@ class MainWindow(QMainWindow):
         self.secondaryIdx = -1
         self.primaryIdx = self.getJoystickIndex(self.controlsDialog.controlProfile["Primary Device"])
         self.secondaryIdx = self.getJoystickIndex(self.controlsDialog.controlProfile["Secondary Device"])
+        if pygame.joystick.get_count() == 0:
+            print("No joysticks available")
+            return
         self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
         self.secondaryJoystick = pygame.joystick.Joystick(self.secondaryIdx)
         self.primaryJoystick.init()
@@ -205,13 +210,25 @@ class MainWindow(QMainWindow):
         return dzval
 
     def getJoystickIndex(self, joystickName):
-        joystickIndex = -1
+        joystickIndex = -1        
         if not pygame.get_init():
             pygame.init()
-        for i in range(pygame.joystick.get_count()):
+        joyCount = pygame.joystick.get_count()
+        if joyCount == 0:
+            print("No joysticks found")
+            return
+        for i in range(joyCount):
             joystick = pygame.joystick.Joystick(i)
-            joystick.init()
-            if joystickName == joystick.get_name():
+            if not joystick.get_init():
+                joystick.init()
+            joyAxes = joystick.get_numaxes()
+            joyButtons = joystick.get_numbuttons()
+            try:
+                joyName = joystick.get_name()
+            except Exception as ex:
+                print(ex)
+                print("There is problem with joystick")
+            if joystickName == joyName:
                 joystickIndex = i
                 break
             joystick.quit()
@@ -333,7 +350,10 @@ class MainWindow(QMainWindow):
                 if not (curPrimaryJoyName == primaryJoystickName):
                     self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
             else:
-                self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
+                if self.primaryIdx is not None:
+                    self.primaryJoystick = pygame.joystick.Joystick(self.primaryIdx)
+                else:
+                    return
         if self.secondaryIdx == -1:
             print("Secondary joystick not found")
         else:

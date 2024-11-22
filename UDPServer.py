@@ -16,10 +16,10 @@ class UDPServer(asyncio.DatagramProtocol):
         self.tAmps = 0.0
         self.tRollSP = 0.0
         self.tPitchSP = 0.0
-        self.tThrusterPhaseCurrent = [[0.0]*3]*6
-        self.tManAngles = [0.0]*3
-        self.tManPhaseCurrents = [[0.0]*2]*3
-        self.tManVoltages = [0.0]*3
+        self.tThrusterPhaseCurrent = [[0.0, 0.0, 0.0],[0.0, 0.0, 0.0],[0.0, 0.0, 0.0],[0.0, 0.0, 0.0],[0.0, 0.0, 0.0],[0.0, 0.0, 0.0]]
+        self.tManAngles = [0.0, 0.0, 0.0]
+        self.tManPhaseCurrents = [[0.0,0.0],[0.0,0.0],[0.0,0.0]]
+        self.tManVoltages = [0.0, 0.0, 0.0]
         self.manTelemetryObtained = False
         self.lastTelemetryTime = 0
 

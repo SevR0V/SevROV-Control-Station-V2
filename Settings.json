@@ -1,1 +1,1 @@
-{"IP address": "192.168.50.102", "Port": 1337, "PID": {"Roll": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Pitch": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Yaw": {"kP": 1.0, "kI": 0.2, "kD": 0.1}, "Depth": {"kP": 200.0, "kI": 10.0, "kD": 0.5}}, "Control Profile": "DualSense.json"}
+{"IP address": "10.32.31.15", "Port": 1337, "PID": {"Roll": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Pitch": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Yaw": {"kP": 1.0, "kI": 0.2, "kD": 0.1}, "Depth": {"kP": 200.0, "kI": 10.0, "kD": 0.5}}, "Control Profile": "DualSense.json"}
