@@ -39,6 +39,9 @@ class ManipulatorControlWindow(QWidget):
         self.axis2ValInputWaitTimer.timeout.connect(self.axis2ControlVal_collectAngle)
         self.axis3ValInputWaitTimer = QTimer()
         self.axis3ValInputWaitTimer.timeout.connect(self.axis3ControlVal_collectAngle)
+        self.controlUpdateFlagsTimer = QTimer()
+        self.controlUpdateFlagsTimer.timeout.connect(self.updateControl)
+        self.controlUpdateFlagsTimer.start(333)
 
         self.setup_connections()
     
@@ -58,6 +61,11 @@ class ManipulatorControlWindow(QWidget):
         self.ui.axis3ControlVal.valueChanged.connect(self.axis3ControlVal_valueChanged)
         
         self.ui.manEnableControl.stateChanged.connect(self.manEnableControl_state_changed)
+        
+    def updateControl(self):
+        if not self.ui.manEnableControl.isChecked():
+            return
+        self.manFlags = [True, True, True, False]
 
     def axis1ControlDial_valueChanged(self):
         if self.val1ToDialFlag:

@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         self.cflagUpdatePID = False
         self.cflagLights = False
         self.cManFlags = [False, False, False, False]
-        self.cManAngles = [0.0, 0.0, 0.0]
+        self.cManAngles = [0.0, 0.0, 0.0]   
         self.cGripState = GripState.UWMANIPULATOR_GRIP_STOP
 
         # ROV telemetry data
