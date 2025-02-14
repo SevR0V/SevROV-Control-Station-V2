@@ -100,7 +100,8 @@ class MainWindow(QMainWindow):
         self.tAmps = 0.0
         self.tRollSP = 0.0
         self.tPitchSP = 0.0
-        self.tThrusterPhaseCurrent = [[0.0]*3]*6
+        self.tThrusterPhaseCurrent = [[0.0,0.0,0.0], [0.0,0.0,0.0], [0.0,0.0,0.0], 
+                                      [0.0,0.0,0.0], [0.0,0.0,0.0], [0.0,0.0,0.0]]
 
         self.manTelemetryObtained = False
         self.manControl = False

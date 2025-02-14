@@ -24,7 +24,7 @@
     "Vertical": {
         "Primary": {
             "Control": "Axis 5",
-            "Inverted": true
+            "Inverted": false
         },
         "Secondary": {
             "Control": "",

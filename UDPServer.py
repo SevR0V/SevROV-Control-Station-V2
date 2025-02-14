@@ -29,9 +29,9 @@ class UDPServer(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         received = None
-        if len(data) == 116:
+        if len(data) == 44:
             #ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP
-            received = struct.unpack_from("=Qfffffffffffffffffffffffffff", data)            
+            received = struct.unpack_from("=Qfffffffff", data)            
             self.manTelemetryObtained = False
         if len(data) == 164:
             # ERRORFLAGS, roll, pitch, yaw, depth, batVoltage, batCharge, batCurrent, rollSP, pitchSP, 
@@ -53,10 +53,11 @@ class UDPServer(asyncio.DatagramProtocol):
         self.tAmps = received[7]
         self.tRollSP = float(received[8])
         self.tPitchSP = float(received[9])
-        for i in range(6):
-            for j in range(3):
-                self.tThrusterPhaseCurrent[i][j] = received[10+i*3+j]
+        
         if self.manTelemetryObtained:
+            for i in range(6):
+                for j in range(3):
+                    self.tThrusterPhaseCurrent[i][j] = received[10+i*3+j]
             for i in range(3):
                 self.tManAngles[i] = received[28+i]
                 self.tManPhaseCurrents[i][0] = received[31+i*2+0]

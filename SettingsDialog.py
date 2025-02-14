@@ -37,6 +37,7 @@ class SettingsDialog(QDialog):
         self.resetIMU = True
 
     def updatePID_button_click(self):
+        self.setSettings()
         self.updatePID = True
 
     def save_settings(self):

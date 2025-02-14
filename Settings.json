@@ -1,1 +1,1 @@
-{"IP address": "192.168.88.128", "Port": 1337, "PID": {"Roll": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Pitch": {"kP": 4.0, "kI": 0.2, "kD": 0.1}, "Yaw": {"kP": 1.0, "kI": 0.2, "kD": 0.1}, "Depth": {"kP": 200.0, "kI": 10.0, "kD": 0.5}}, "Control Profile": "DualSense.json"}
+{"IP address": "192.168.88.246", "Port": 1337, "PID": {"Roll": {"kP": 7.0, "kI": 0.2, "kD": 0.1}, "Pitch": {"kP": 7.0, "kI": 0.2, "kD": 0.1}, "Yaw": {"kP": 0.2, "kI": 0.02, "kD": 0.01}, "Depth": {"kP": 200.0, "kI": 10.0, "kD": 0.5}}, "Control Profile": "GladiatorEVOv2.json"}

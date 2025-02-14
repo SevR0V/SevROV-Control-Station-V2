@@ -1,0 +1,304 @@
+{
+    "Primary Device": "VKBsim Gladiator EVO L",
+    "Secondary Device": "VKBsim Gladiator EVO R",
+    "Forward": {
+        "Primary": {
+            "Control": "Axis 1",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Axis 1",
+            "Inverted": true
+        }
+    },
+    "Strafe": {
+        "Primary": {
+            "Control": "Axis 0",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Axis 0",
+            "Inverted": false
+        }
+    },
+    "Vertical": {
+        "Primary": {
+            "Control": "Axis 5",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Yaw": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Axis 5",
+            "Inverted": false
+        }
+    },
+    "Roll": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Pitch": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Camera angle": {
+        "Primary": {
+            "Control": "Axis 4",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Axis 4",
+            "Inverted": false
+        }
+    },
+    "Manipulator rotate": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Manipulator grip": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Move forward": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Move backwards": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Move left": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Move right": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Rotate left": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Rotate right": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Move down": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 12",
+            "Inverted": false
+        }
+    },
+    "Move up": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 10",
+            "Inverted": false
+        }
+    },
+    "Roll increment": {
+        "Primary": {
+            "Control": "Button 6",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 6",
+            "Inverted": false
+        }
+    },
+    "Roll decrement": {
+        "Primary": {
+            "Control": "Button 8",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 8",
+            "Inverted": false
+        }
+    },
+    "Pitch increment": {
+        "Primary": {
+            "Control": "Button 5",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 5",
+            "Inverted": false
+        }
+    },
+    "Pitch decrement": {
+        "Primary": {
+            "Control": "Button 7",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 7",
+            "Inverted": false
+        }
+    },
+    "Camera rotate up": {
+        "Primary": {
+            "Control": "Button 24",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 24",
+            "Inverted": false
+        }
+    },
+    "Camera rotate down": {
+        "Primary": {
+            "Control": "Button 25",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 25",
+            "Inverted": false
+        }
+    },
+    "Manipulator rotate left": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Manipulator rotate right": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Manipulator grip close": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Manipulator grip open": {
+        "Primary": {
+            "Control": "",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "",
+            "Inverted": false
+        }
+    },
+    "Lights": {
+        "Primary": {
+            "Control": "Button 2",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 2",
+            "Inverted": false
+        }
+    },
+    "Reset position": {
+        "Primary": {
+            "Control": "Button 3",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 3",
+            "Inverted": false
+        }
+    },
+    "Master": {
+        "Primary": {
+            "Control": "Button 21",
+            "Inverted": false
+        },
+        "Secondary": {
+            "Control": "Button 21",
+            "Inverted": false
+        }
+    }
+}
